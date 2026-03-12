@@ -1,0 +1,2022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NotebookLM Quiz Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #faf8f5;
+    --surface: #ffffff;
+    --surface-alt: #f3f0eb;
+    --border: #e2ddd5;
+    --border-focus: #8b7355;
+    --text: #2c2418;
+    --text-muted: #7a6e5d;
+    --text-light: #a89b88;
+    --accent: #2563eb;       /* Updated to primary blue */
+    --accent-hover: #1d4ed8; /* Updated to darker blue */
+    --accent-light: #eff6ff; /* Updated to very light blue */
+    --correct: #2d7d46;
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+  .app-title {
+    font-family: var(--serif);
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+  .app-title span { color: var(--accent); }
+  .app-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .question-count-badge {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Tabs ── */
+  .tab-bar {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+  }
+  .tab-btn {
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    padding: 14px 20px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all var(--transition);
+    position: relative;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── Main content ── */
+  .main-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 32px;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .card-title {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  .card p, .card li {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    line-height: 1.7;
+  }
+
+  /* ── Form elements ── */
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  input[type="text"], textarea, select {
+    font-family: var(--sans);
+    font-size: 0.9rem;
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color var(--transition);
+    outline: none;
+  }
+  input[type="text"]:focus, textarea:focus, select:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px rgba(139,115,85,0.1);
+  }
+  textarea {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.6;
+    resize: vertical;
+    min-height: 120px;
+  }
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .input-group { margin-bottom: 16px; }
+
+  /* ── Buttons ── */
+  .btn {
+    font-family: var(--sans);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+  .btn-primary:hover { background: var(--accent-hover); }
+  .btn-secondary {
+    background: var(--surface-alt);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover {
+    background: var(--border);
+  }
+  .btn-ghost {
+    background: none;
+    color: var(--accent);
+    padding: 8px 12px;
+  }
+  .btn-ghost:hover { background: var(--accent-light); }
+  .btn-danger {
+    background: none;
+    color: var(--incorrect);
+    padding: 8px 12px;
+  }
+  .btn-danger:hover { background: var(--incorrect-bg); }
+  .btn-sm { font-size: 0.8rem; padding: 6px 12px; }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+
+  /* ── Bookmarklet ── */
+  .bookmarklet-link {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 12px 24px;
+    border-radius: var(--radius);
+    text-decoration: none;
+    cursor: grab;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition);
+    user-select: none;
+  }
+  .bookmarklet-link:hover {
+    background: var(--accent-hover);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+  }
+  .steps-list {
+    counter-reset: steps;
+    list-style: none;
+    margin: 16px 0;
+  }
+  .steps-list li {
+    counter-increment: steps;
+    padding: 8px 0 8px 40px;
+    position: relative;
+  }
+  .steps-list li::before {
+    content: counter(steps);
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 26px;
+    height: 26px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 50%;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Question list (Editor) ── */
+  .question-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 12px;
+    transition: all var(--transition);
+    position: relative;
+  }
+  .question-item:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-focus);
+  }
+   .question-item.editing {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+
+  }
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .q-number {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-light);
+    background: var(--surface-alt);
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .q-text {
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-weight: 600;
+    flex: 1;
+    line-height: 1.5;
+  }
+  .q-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .q-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .q-option {
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    border-radius: 4px;
+    background: var(--surface-alt);
+    color: var(--text-muted);
+  }
+  .q-option.correct {
+    background: var(--correct-bg);
+    color: var(--correct);
+    font-weight: 600;
+    border-left: 3px solid var(--correct);
+  }
+  .q-explanation {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--border);
+    font-style: italic;
+  }
+
+  /* ── Edit form overlay ── */
+  .edit-form {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+  .option-edit-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .option-edit-row input[type="text"] { flex: 1; }
+  .option-edit-row input[type="radio"] { flex-shrink: 0; }
+  .radio-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    width: 55px;
+  }
+
+  /* ── Quiz mode ── */
+  .quiz-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+  }
+  .mode-select {
+    font-family: var(--sans);
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    background: var(--surface);
+    cursor: pointer;
+  }
+  .quiz-progress {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+  }
+  .quiz-progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--surface-alt);
+    border-radius: 2px;
+    margin-bottom: 24px;
+    overflow: hidden;
+  }
+  .quiz-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .quiz-slide {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    box-shadow: var(--shadow-md);
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+  }
+  .quiz-question-text {
+    font-family: var(--serif);
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .quiz-option-btn {
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    text-align: left;
+    padding: 14px 18px;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    cursor: pointer;
+    transition: all var(--transition);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.5;
+  }
+  .quiz-option-btn:hover:not(.disabled) {
+    border-color: var(--border-focus);
+    background: var(--surface-alt);
+  }
+  .quiz-option-btn .option-letter {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--surface-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .quiz-option-btn.selected {
+    border-color: var(--accent);
+    background: var(--accent-light);
+  }
+  .quiz-option-btn.selected .option-letter {
+    background: var(--accent);
+    color: #fff;
+  }
+  .quiz-option-btn.correct-reveal {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+  }
+  .quiz-option-btn.correct-reveal .option-letter {
+    background: var(--correct);
+    color: #fff;
+  }
+  .quiz-option-btn.incorrect-reveal {
+    border-color: var(--incorrect);
+    background: var(--incorrect-bg);
+  }
+  .quiz-option-btn.incorrect-reveal .option-letter {
+    background: var(--incorrect);
+    color: #fff;
+  }
+  .quiz-option-btn.disabled { cursor: default; opacity: 0.85; }
+
+  .quiz-feedback {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct-fb {
+    background: var(--correct-bg);
+    border: 1px solid var(--correct);
+    color: var(--correct);
+  }
+  .quiz-feedback.incorrect-fb {
+    background: var(--incorrect-bg);
+    border: 1px solid var(--incorrect);
+    color: var(--incorrect);
+  }
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    gap: 12px;
+  }
+
+  /* ── Results ── */
+  .results-card {
+    text-align: center;
+    padding: 48px 32px;
+  }
+  .results-score {
+    font-family: var(--serif);
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .results-label {
+    font-size: 1rem;
+    color: var(--text-muted);
+    margin-bottom: 24px;
+  }
+  .results-breakdown {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-bottom: 32px;
+  }
+  .results-stat {
+    text-align: center;
+  }
+  .results-stat-num {
+    font-family: var(--mono);
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .results-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+  .results-stat-num.correct-c { color: var(--correct); }
+  .results-stat-num.incorrect-c { color: var(--incorrect); }
+
+  /* ── Review list ── */
+  .review-item {
+    text-align: left;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+  }
+  .review-item.was-correct { border-left: 4px solid var(--correct); }
+  .review-item.was-incorrect { border-left: 4px solid var(--incorrect); }
+  .review-q {
+    font-family: var(--serif);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .review-answer {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+  .review-answer strong { color: var(--text); }
+
+  /* ── Export ── */
+  .export-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .export-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    cursor: pointer;
+    transition: all var(--transition);
+  }
+  .export-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--border-focus);
+    transform: translateY(-1px);
+  }
+  .export-card-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+  .export-card-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .export-card-icon {
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    text-align: center;
+    padding: 48px 24px;
+    color: var(--text-muted);
+  }
+  .empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+    opacity: 0.5;
+  }
+  .empty-state p { font-size: 0.95rem; }
+
+  /* ── Tip box ── */
+  .tip {
+    background: var(--highlight-bg);
+    border: 1px solid var(--highlight);
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    font-size: 0.82rem;
+    color: var(--text);
+    margin-top: 16px;
+  }
+  .tip strong { color: var(--text); }
+
+  /* ── Notification toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--text);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 999;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── Drag reorder ── */
+  .question-item.dragging {
+    opacity: 0.4;
+  }
+  .question-item.drag-over {
+    border-top: 3px solid var(--accent);
+  }
+  .drag-handle {
+    cursor: grab;
+    color: var(--text-light);
+    font-size: 1rem;
+    padding: 2px 4px;
+    user-select: none;
+  }
+  .drag-handle:active { cursor: grabbing; }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .app-header { padding: 16px; }
+    .tab-bar { padding: 0 16px; overflow-x: auto; }
+    .tab-btn { padding: 12px 14px; font-size: 0.82rem; white-space: nowrap; }
+    .main-content { padding: 16px; }
+    .input-row { grid-template-columns: 1fr; }
+    .q-options { grid-template-columns: 1fr; }
+    .export-grid { grid-template-columns: 1fr; }
+    .results-breakdown { gap: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div>
+    <div class="app-title">Quiz <span>Generator</span></div>
+    <div class="app-subtitle">Extract, build, and export interactive quizzes <span style="color: #808080; margin-left: 8px;">| Tony Myers</span></div>
+  </div>
+  <div class="question-count-badge" id="questionCountBadge">0 questions</div>
+</header>
+
+<nav class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('import')">Import</button>
+  <button class="tab-btn" onclick="switchTab('editor')">Editor</button>
+  <button class="tab-btn" onclick="switchTab('quiz')">Take Quiz</button>
+  <button class="tab-btn" onclick="switchTab('export')">Export</button>
+</nav>
+
+<main class="main-content">
+
+  <!-- ═══════════ IMPORT TAB ═══════════ -->
+  <div class="tab-panel active" id="panel-import">
+
+    <div class="card">
+      <div class="card-title">Extract from NotebookLM</div>
+      <p style="margin-bottom:14px;">Copy quiz questions directly from NotebookLM review mode and paste them below. The parser understands the native copy format automatically.</p>
+      <ol class="steps-list">
+        <li>Open a <strong>NotebookLM notebook</strong> and generate a quiz</li>
+        <li>Complete the quiz, click <strong>Done</strong>, then <strong>Review quiz</strong></li>
+        <li>Click inside the quiz area, press <kbd style="background:var(--surface-alt);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:0.75rem;">Ctrl+A</kbd> then <kbd style="background:var(--surface-alt);border:1px solid var(--border);border-radius:3px;padding:1px 5px;font-family:var(--mono);font-size:0.75rem;">Ctrl+C</kbd> to copy the question</li>
+        <li>Select <strong>NotebookLM paste</strong> format below, paste into the text area, and click <strong>Import</strong></li>
+        <li>Click <strong>Next</strong> in the quiz, then repeat steps 3–4 for each question</li>
+      </ol>
+      <div class="tip">
+        <strong>Tip:</strong> Duplicate questions are automatically skipped, so you can freely re-paste without worrying about repeats. The parser handles both correct ("That's right!") and incorrect ("Not quite") answer formats.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Paste quiz data</div>
+      <p style="margin-bottom:12px;">Paste copied text from NotebookLM quiz review, or use one of the structured formats below.</p>
+      <div class="input-group">
+        <label for="importFormat">Format</label>
+        <select id="importFormat" class="mode-select" style="width:auto;margin-bottom:12px;">
+          <option value="nlm">NotebookLM paste</option>
+          <option value="json">JSON (structured)</option>
+          <option value="aiken">Aiken format</option>
+          <option value="gift">GIFT format</option>
+          <option value="text">Plain text (see template)</option>
+        </select>
+      </div>
+      <textarea id="importData" placeholder="Paste quiz text from NotebookLM here (Ctrl+V). It will auto-import when using NotebookLM paste format."></textarea>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="importQuiz()">Import</button>
+        <button class="btn btn-secondary" onclick="showFormatHelp()">Format examples</button>
+        <button class="btn btn-ghost" onclick="loadSampleQuiz()">Load sample quiz</button>
+      </div>
+      <div id="formatHelp" style="display:none;margin-top:16px;">
+        <div class="card" style="background:var(--surface-alt);border:none;box-shadow:none;">
+          <pre style="font-family:var(--mono);font-size:0.78rem;white-space:pre-wrap;color:var(--text-muted);" id="formatHelpText"></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Quiz metadata</div>
+      <div class="input-row">
+        <div class="input-group">
+          <label for="quizTitle">Quiz title</label>
+          <input type="text" id="quizTitle" placeholder="e.g. Biomechanics Module 3 Review">
+        </div>
+        <div class="input-group">
+          <label for="quizAuthor">Author / source</label>
+          <input type="text" id="quizAuthor" placeholder="e.g. NotebookLM / Dr Smith">
+        </div>
+      </div>
+      <div class="input-group">
+        <label for="quizDescription">Description (optional)</label>
+        <input type="text" id="quizDescription" placeholder="Brief description of the quiz content">
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ EDITOR TAB ═══════════ -->
+  <div class="tab-panel" id="panel-editor">
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h2 style="font-family:var(--serif);font-size:1.3rem;font-weight:700;">Questions</h2>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="clearAllQuestions()">Clear all</button>
+        <button class="btn btn-primary btn-sm" onclick="addNewQuestion()">+ Add question</button>
+      </div>
+    </div>
+
+    <div id="questionList"></div>
+
+    <div id="emptyEditor" class="empty-state">
+      <div class="empty-state-icon">📝</div>
+      <p>No questions yet. Import a quiz or add questions manually.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════ QUIZ TAB ═══════════ -->
+  <div class="tab-panel" id="panel-quiz">
+
+    <div class="quiz-controls">
+      <select class="mode-select" id="quizMode" onchange="resetQuiz()">
+        <option value="test">Test mode (score at end)</option>
+        <option value="study">Study mode (instant feedback)</option>
+      </select>
+      <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;cursor:pointer;margin:0;">
+        <input type="checkbox" id="shuffleToggle" onchange="resetQuiz()"> Shuffle questions
+      </label>
+      <span class="quiz-progress" id="quizProgress"></span>
+    </div>
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
+
+    <div id="quizArea"></div>
+    <div id="quizEmpty" class="empty-state">
+      <div class="empty-state-icon">🎯</div>
+      <p>Add some questions first, then come here to take the quiz.</p>
+    </div>
+  </div>
+
+  <!-- ═══════════ EXPORT TAB ═══════════ -->
+  <div class="tab-panel" id="panel-export">
+
+    <h2 style="font-family:var(--serif);font-size:1.3rem;font-weight:700;margin-bottom:20px;">Export &amp; Download</h2>
+
+    <div class="export-grid">
+      <div class="export-card" onclick="exportStandaloneHTML()">
+        <div class="export-card-icon">🌐</div>
+        <div class="export-card-title">Standalone HTML Quiz</div>
+        <div class="export-card-desc">Interactive, self-contained quiz file that works offline in any browser</div>
+      </div>
+      <div class="export-card" onclick="exportMoodleXML()">
+        <div class="export-card-icon">🎓</div>
+        <div class="export-card-title">Moodle XML</div>
+        <div class="export-card-desc">Import directly into Moodle question bank</div>
+      </div>
+      <div class="export-card" onclick="exportAiken()">
+        <div class="export-card-icon">📄</div>
+        <div class="export-card-title">Aiken format</div>
+        <div class="export-card-desc">Simple text format for Moodle and other LMS platforms</div>
+      </div>
+      <div class="export-card" onclick="exportCSV()">
+        <div class="export-card-icon">📊</div>
+        <div class="export-card-title">CSV</div>
+        <div class="export-card-desc">Spreadsheet-compatible with question, options, answer, explanation</div>
+      </div>
+      <div class="export-card" onclick="exportJSON()">
+        <div class="export-card-icon">{ }</div>
+        <div class="export-card-title">JSON</div>
+        <div class="export-card-desc">Raw structured data for custom integrations</div>
+      </div>
+      <div class="export-card" onclick="exportGIFT()">
+        <div class="export-card-icon">🎁</div>
+        <div class="export-card-title">GIFT format</div>
+        <div class="export-card-desc">Moodle GIFT format for bulk question import</div>
+      </div>
+    </div>
+
+    <div id="exportEmpty" class="empty-state" style="margin-top:20px;">
+      <p>Add questions to enable export options.</p>
+    </div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let questions = [];
+let quizState = { index: 0, answers: [], order: [], revealed: false };
+
+// ═══════════════════════════════════════════════════════
+//  BOOKMARKLET
+// ═══════════════════════════════════════════════════════
+function buildBookmarklet() {
+  const code = `(function(){
+    try {
+      var qs = [];
+      /* Try to read quiz slides from NotebookLM DOM */
+      /* NotebookLM renders quizzes as a slide-based component */
+      /* We look for quiz question containers and extract text + options */
+      var slides = document.querySelectorAll('.quiz-question, [data-question-index], .question-slide');
+      if (slides.length === 0) {
+        /* Fallback: try the known quiz panel structure */
+        var panel = document.querySelector('.quiz-panel, .studio-quiz, [class*="quiz"]');
+        if (panel) {
+          slides = panel.querySelectorAll('[class*="question"]');
+        }
+      }
+      if (slides.length === 0) {
+        /* Broader fallback: find question text and radio/option groups */
+        var allText = document.querySelectorAll('.question-text, .quiz-question-text, [class*="questionText"]');
+        if (allText.length > 0) {
+          allText.forEach(function(qt, i) {
+            var q = {question: qt.textContent.trim(), options: [], correctIndex: -1, explanation: ''};
+            var parent = qt.closest('[class*="question"], [class*="slide"], [class*="card"]') || qt.parentElement;
+            if (parent) {
+              var opts = parent.querySelectorAll('[class*="option"], [class*="answer"], [class*="choice"], label, .radio-option');
+              opts.forEach(function(o, j) {
+                var text = o.textContent.trim();
+                if (text && text !== q.question) {
+                  q.options.push(text);
+                  if (o.classList.contains('correct') || o.classList.contains('selected-correct') ||
+                      o.querySelector('[class*="correct"]') || o.getAttribute('data-correct') === 'true' ||
+                      o.querySelector('input:checked')) {
+                    q.correctIndex = q.options.length - 1;
+                  }
+                }
+              });
+              var expl = parent.querySelector('[class*="explanation"], [class*="feedback"], [class*="rationale"]');
+              if (expl) q.explanation = expl.textContent.trim();
+            }
+            if (q.options.length >= 2) qs.push(q);
+          });
+        }
+      } else {
+        slides.forEach(function(slide) {
+          var qEl = slide.querySelector('.question-text, [class*="questionText"], h2, h3, p:first-of-type');
+          if (!qEl) return;
+          var q = {question: qEl.textContent.trim(), options: [], correctIndex: -1, explanation: ''};
+          var opts = slide.querySelectorAll('[class*="option"], [class*="answer"], [class*="choice"], label');
+          opts.forEach(function(o, j) {
+            var text = o.textContent.trim();
+            if (text && text !== q.question) {
+              q.options.push(text);
+              if (o.classList.contains('correct') || o.querySelector('[class*="correct"]') ||
+                  o.getAttribute('data-correct') === 'true') {
+                q.correctIndex = q.options.length - 1;
+              }
+            }
+          });
+          var expl = slide.querySelector('[class*="explanation"], [class*="feedback"]');
+          if (expl) q.explanation = expl.textContent.trim();
+          if (q.options.length >= 2) qs.push(q);
+        });
+      }
+      if (qs.length === 0) {
+        alert('Could not find quiz questions on this page.\\n\\nMake sure a quiz is open and visible in NotebookLM. If the DOM structure has changed, you may need to use a Chrome extension like NotebookLM ExportKit instead and paste the exported data.');
+        return;
+      }
+      var json = JSON.stringify(qs, null, 2);
+      navigator.clipboard.writeText(json).then(function() {
+        alert('Extracted ' + qs.length + ' questions. Paste into the Quiz Generator import area.');
+      });
+    } catch(e) {
+      alert('Error extracting quiz: ' + e.message);
+    }
+  })();`;
+  const el = document.getElementById('bookmarkletLink');
+  el.href = 'javascript:' + encodeURIComponent(code);
+}
+
+// ═══════════════════════════════════════════════════════
+//  TAB NAVIGATION
+// ═══════════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'editor') renderEditor();
+  if (name === 'quiz') resetQuiz();
+  if (name === 'export') updateExportState();
+}
+
+// ═══════════════════════════════════════════════════════
+//  IMPORT / PARSING
+// ═══════════════════════════════════════════════════════
+function importQuiz() {
+  const raw = document.getElementById('importData').value.trim();
+  if (!raw) { showToast('Nothing to import'); return; }
+  const fmt = document.getElementById('importFormat').value;
+  let parsed = [];
+  try {
+    switch (fmt) {
+      case 'nlm': parsed = parseNotebookLMPaste(raw); break;
+      case 'json': parsed = parseJSON(raw); break;
+      case 'aiken': parsed = parseAiken(raw); break;
+      case 'gift': parsed = parseGIFT(raw); break;
+      case 'text': parsed = parsePlainText(raw); break;
+    }
+  } catch (e) {
+    showToast('Parse error: ' + e.message);
+    return;
+  }
+  if (parsed.length === 0) {
+    showToast('No valid questions found. Check the format.');
+    return;
+  }
+  // Deduplicate against existing questions (especially useful for NLM paste)
+  let added = 0;
+  let skipped = 0;
+  for (const q of parsed) {
+    const key = q.question.substring(0, 60);
+    const isDupe = questions.some(existing => existing.question.substring(0, 60) === key);
+    if (isDupe) {
+      skipped++;
+    } else {
+      questions.push(q);
+      added++;
+    }
+  }
+  updateBadge();
+  if (added > 0 && skipped > 0) {
+    showToast('Imported ' + added + ' question' + (added !== 1 ? 's' : '') + ' (' + skipped + ' duplicate' + (skipped !== 1 ? 's' : '') + ' skipped)');
+  } else if (added > 0) {
+    showToast('Imported ' + added + ' question' + (added !== 1 ? 's' : ''));
+  } else {
+    showToast('All ' + skipped + ' question(s) already imported');
+  }
+  document.getElementById('importData').value = '';
+}
+
+function parseNotebookLMPaste(raw) {
+  // Split pasted text into individual question blocks at "N / M" markers
+  const lines = raw.split(/\n/);
+  const blocks = [];
+  let current = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (/^\d+\s*\/\s*\d+$/.test(trimmed) && current.length > 0) {
+      const hasSubstance = current.some(l => l.trim().length > 3 && !/^\d+\s*\/\s*\d+$/.test(l.trim()));
+      if (hasSubstance) blocks.push(current.join('\n'));
+      current = [line];
+    } else {
+      current.push(line);
+    }
+  }
+  if (current.length > 0) {
+    const hasSubstance = current.some(l => l.trim().length > 3 && !/^\d+\s*\/\s*\d+$/.test(l.trim()));
+    if (hasSubstance) blocks.push(current.join('\n'));
+  }
+
+  // If no "N / M" marker found, treat entire text as one block
+  if (blocks.length === 0 && raw.trim().length > 20) {
+    blocks.push(raw);
+  }
+
+  const results = [];
+  for (const block of blocks) {
+    const q = parseNLMBlock(block);
+    if (q) results.push(q);
+  }
+
+  // If NLM parse finds nothing, try JSON in case the user pasted JSON with this format selected
+  if (results.length === 0) {
+    try {
+      return parseJSON(raw);
+    } catch(e) { /* not JSON either */ }
+  }
+
+  return results;
+}
+
+function parseNLMBlock(text) {
+  if (!text || text.trim().length < 20) return null;
+  const lines = text.split(/\n/).map(l => l.trim()).filter(l => l.length > 0);
+
+  const skip = new Set([
+    'Next', 'Previous', 'Done', 'Hint', 'Explain', 'Finish review',
+    'Good content', 'Bad content', 'AI Quiz',
+    'Right answer', 'Right answer(skipped)',
+    "That's right!", "That\u2019s right!",
+    'Not quite', 'Not quite!', 'Review quiz', 'Retake quiz',
+    'Good content Bad content'
+  ]);
+  const correctMarkers = new Set([
+    "That's right!", "That\u2019s right!",
+    'Right answer', 'Right answer(skipped)'
+  ]);
+  const wrongMarkers = new Set(['Not quite', 'Not quite!']);
+
+  let question = '';
+  let options = [];
+  let correctIndex = -1;
+  let explanation = '';
+  let pendingLetter = null;
+  let lastMarkerWasCorrect = false;
+  let lastMarkerWasWrong = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Skip question number (e.g. "1 / 12")
+    if (/^\d+\s*\/\s*\d+$/.test(line)) continue;
+    // Skip "Based on N sources"
+    if (/^Based on \d+ source/.test(line)) continue;
+
+    // Handle skip/marker items
+    if (skip.has(line)) {
+      if (correctMarkers.has(line)) {
+        lastMarkerWasCorrect = true;
+        lastMarkerWasWrong = false;
+        if (options.length > 0) correctIndex = options.length - 1;
+      } else if (wrongMarkers.has(line)) {
+        lastMarkerWasWrong = true;
+        lastMarkerWasCorrect = false;
+      }
+      continue;
+    }
+
+    if (line.length < 2) continue;
+
+    // Option letter on its own line: "A." or "B."
+    if (/^[A-F]\.$/.test(line)) {
+      pendingLetter = line.charAt(0);
+      lastMarkerWasCorrect = false;
+      lastMarkerWasWrong = false;
+      continue;
+    }
+
+    // Option letter with text on same line: "A.  Some text"
+    const sameLineMatch = line.match(/^([A-F])\.\s+(.+)/s);
+    if (sameLineMatch) {
+      options.push({ letter: sameLineMatch[1], text: sameLineMatch[2] });
+      pendingLetter = null;
+      lastMarkerWasCorrect = false;
+      lastMarkerWasWrong = false;
+      continue;
+    }
+
+    // Text following a pending option letter
+    if (pendingLetter) {
+      options.push({ letter: pendingLetter, text: line });
+      pendingLetter = null;
+      lastMarkerWasCorrect = false;
+      lastMarkerWasWrong = false;
+      continue;
+    }
+
+    // Explanation: appears after a correct-answer or wrong-answer marker
+    if ((lastMarkerWasCorrect || lastMarkerWasWrong) && line.length > 10 &&
+        !/^[A-F]\.$/.test(line) && !/^[A-F]\.\s/.test(line) &&
+        !/^\d+\s*\/\s*\d+$/.test(line)) {
+      if (lastMarkerWasCorrect) explanation = line;
+      lastMarkerWasCorrect = false;
+      lastMarkerWasWrong = false;
+      continue;
+    }
+
+    // Question text: first substantial line before any options
+    if (!question && line.length > 10 && options.length === 0) {
+      question = line;
+      continue;
+    }
+
+    // Multi-line question continuation
+    if (question && options.length === 0 && line.length > 5 &&
+        !/^[A-F]\.$/.test(line) && !/^[A-F]\.\s/.test(line)) {
+      question += ' ' + line;
+      continue;
+    }
+  }
+
+  if (!question || options.length < 2) return null;
+
+  // Second pass for correct index if not found
+  if (correctIndex === -1) {
+    let optIdx = -1;
+    for (const line of lines) {
+      if (/^[A-F]\.$/.test(line) || /^[A-F]\.\s+/.test(line)) optIdx++;
+      if (correctMarkers.has(line) && optIdx >= 0) correctIndex = optIdx;
+    }
+  }
+
+  return {
+    question,
+    options: options.map(o => o.text),
+    correctIndex,
+    explanation
+  };
+}
+
+function parseJSON(raw) {
+  let data = JSON.parse(raw);
+  if (!Array.isArray(data)) {
+    if (data.questions) data = data.questions;
+    else data = [data];
+  }
+  return data.map(q => ({
+    question: q.question || q.text || q.q || '',
+    options: q.options || q.answers || q.choices || [],
+    correctIndex: (q.correctIndex !== undefined) ? q.correctIndex :
+                  (q.correct_index !== undefined) ? q.correct_index :
+                  (q.correctAnswer !== undefined) ? (typeof q.correctAnswer === 'number' ? q.correctAnswer :
+                    (q.options || []).indexOf(q.correctAnswer)) : 0,
+    explanation: q.explanation || q.feedback || q.rationale || ''
+  })).filter(q => q.question && q.options.length >= 2);
+}
+
+function parseAiken(raw) {
+  const blocks = raw.split(/\n\s*\n/).filter(b => b.trim());
+  const result = [];
+  for (const block of blocks) {
+    const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length < 3) continue;
+    const question = lines[0];
+    const opts = [];
+    let correctLetter = '';
+    for (let i = 1; i < lines.length; i++) {
+      const optMatch = lines[i].match(/^([A-Z])[.)]\s*(.+)/);
+      if (optMatch) {
+        opts.push(optMatch[2]);
+      }
+      const ansMatch = lines[i].match(/^ANSWER:\s*([A-Z])/i);
+      if (ansMatch) correctLetter = ansMatch[1];
+    }
+    if (opts.length >= 2) {
+      result.push({
+        question,
+        options: opts,
+        correctIndex: correctLetter ? correctLetter.charCodeAt(0) - 65 : 0,
+        explanation: ''
+      });
+    }
+  }
+  return result;
+}
+
+function parseGIFT(raw) {
+  const result = [];
+  const qBlocks = raw.split(/\n\s*\n/).filter(b => b.trim());
+  for (const block of qBlocks) {
+    const titleMatch = block.match(/^::(.*?)::\s*/);
+    let body = titleMatch ? block.slice(titleMatch[0].length) : block;
+    const braceMatch = body.match(/^(.*?)\{([\s\S]*?)\}/);
+    if (!braceMatch) continue;
+    const question = braceMatch[1].trim();
+    const answersRaw = braceMatch[2];
+    const opts = [];
+    let correctIdx = 0;
+    const optMatches = answersRaw.matchAll(/([=~])\s*(.*?)(?=\n[=~]|\n*$)/g);
+    for (const m of optMatches) {
+      opts.push(m[2].trim());
+      if (m[1] === '=') correctIdx = opts.length - 1;
+    }
+    if (opts.length >= 2) {
+      result.push({ question, options: opts, correctIndex: correctIdx, explanation: '' });
+    }
+  }
+  return result;
+}
+
+function parsePlainText(raw) {
+  const blocks = raw.split(/\n\s*\n/).filter(b => b.trim());
+  const result = [];
+  for (const block of blocks) {
+    const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length < 3) continue;
+    const question = lines[0].replace(/^\d+[.)]\s*/, '');
+    const opts = [];
+    let correctIdx = 0;
+    let explanation = '';
+    for (let i = 1; i < lines.length; i++) {
+      const l = lines[i];
+      if (l.toLowerCase().startsWith('explanation:') || l.toLowerCase().startsWith('feedback:')) {
+        explanation = l.replace(/^(explanation|feedback):\s*/i, '');
+        continue;
+      }
+      let text = l.replace(/^[A-Za-z][.)]\s*/, '').replace(/^\*\s*/, '');
+      const isCorrect = l.startsWith('*') || l.includes('(correct)') || l.includes('[correct]');
+      text = text.replace(/\s*\(correct\)\s*/i, '').replace(/\s*\[correct\]\s*/i, '');
+      if (text) {
+        if (isCorrect) correctIdx = opts.length;
+        opts.push(text);
+      }
+    }
+    if (opts.length >= 2) {
+      result.push({ question, options: opts, correctIndex: correctIdx, explanation });
+    }
+  }
+  return result;
+}
+
+function showFormatHelp() {
+  const el = document.getElementById('formatHelp');
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  const fmt = document.getElementById('importFormat').value;
+  const examples = {
+    nlm: `1 / 10
+
+Under the 'modified AI assessment rating scale', what is permitted at Level 3?
+A.
+Improving the clarity and quality of student-created work
+
+Right answer
+Level 3 allows AI to be used to enhance student-created content.
+B.
+Generating new content to fill gaps in an essay
+C.
+Using AI for brainstorming and creating the initial structure
+D.
+Collaborating with AI as a 'co-pilot' throughout the process
+
+Not quite
+Co-piloting represents Level 5 on the scale.
+Explain
+
+(Copy directly from the NotebookLM quiz review. Handles "That's right!", "Right answer", and "Not quite" markers.)`,
+    json: `[
+  {
+    "question": "What is the powerhouse of the cell?",
+    "options": ["Nucleus", "Mitochondria", "Ribosome", "Golgi apparatus"],
+    "correctIndex": 1,
+    "explanation": "Mitochondria generate most of the cell's ATP."
+  }
+]`,
+    aiken: `What is the powerhouse of the cell?
+A) Nucleus
+B) Mitochondria
+C) Ribosome
+D) Golgi apparatus
+ANSWER: B
+
+What planet is closest to the Sun?
+A) Venus
+B) Earth
+C) Mercury
+D) Mars
+ANSWER: C`,
+    gift: `::Cell Biology:: What is the powerhouse of the cell? {
+=Mitochondria
+~Nucleus
+~Ribosome
+~Golgi apparatus
+}`,
+    text: `1. What is the powerhouse of the cell?
+A) Nucleus
+* Mitochondria
+C) Ribosome
+D) Golgi apparatus
+Explanation: Mitochondria generate most of the cell's ATP.
+
+(Mark correct answer with * at start of line)`
+  };
+  document.getElementById('formatHelpText').textContent = examples[fmt] || '';
+}
+
+function loadSampleQuiz() {
+  questions = [
+    { question: "Which type of muscle fibre is primarily recruited during high-intensity, short-duration activities?", options: ["Type I (slow-twitch)", "Type IIa (fast-twitch oxidative)", "Type IIx (fast-twitch glycolytic)", "Cardiac muscle fibres"], correctIndex: 2, explanation: "Type IIx fibres generate the most force and are recruited during maximal efforts, though they fatigue rapidly." },
+    { question: "What does VO₂ max measure?", options: ["Maximum heart rate during exercise", "Maximum rate of oxygen consumption during exercise", "Maximum lung capacity", "Resting metabolic rate"], correctIndex: 1, explanation: "VO₂ max represents the maximum rate at which oxygen can be taken up, transported, and utilised during exercise." },
+    { question: "In biomechanics, what does the term 'moment arm' refer to?", options: ["The length of the upper limb", "The perpendicular distance from the line of force to the axis of rotation", "The mass of the rotating segment", "The angular velocity of a joint"], correctIndex: 1, explanation: "The moment arm is the perpendicular distance between the line of action of a force and the axis of rotation, determining the torque produced." },
+    { question: "Which energy system is the primary contributor during a 400-metre sprint?", options: ["Phosphocreatine (ATP-PC) system", "Aerobic system", "Anaerobic glycolytic (lactic acid) system", "Fat oxidation"], correctIndex: 2, explanation: "A 400m sprint lasts approximately 45-60 seconds, relying heavily on anaerobic glycolysis, though all energy systems contribute." },
+    { question: "What is the SAID principle in exercise science?", options: ["Strength Adaptation In Development", "Specific Adaptation to Imposed Demands", "Systematic Approach to Interval Design", "Sequential Activation of Isotonic Dynamics"], correctIndex: 1, explanation: "The SAID principle states that the body adapts specifically to the type of demand placed upon it during training." }
+  ];
+  document.getElementById('quizTitle').value = 'Sport Science — Sample Quiz';
+  document.getElementById('quizAuthor').value = 'Quiz Generator Demo';
+  updateBadge();
+  showToast('Loaded 5 sample questions');
+}
+
+// ═══════════════════════════════════════════════════════
+//  EDITOR
+// ═══════════════════════════════════════════════════════
+function renderEditor() {
+  const list = document.getElementById('questionList');
+  const empty = document.getElementById('emptyEditor');
+  if (questions.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = questions.map((q, i) => `
+    <div class="question-item" draggable="true" data-index="${i}"
+         ondragstart="dragStart(event)" ondragover="dragOver(event)"
+         ondragenter="dragEnter(event)" ondragleave="dragLeave(event)"
+         ondrop="dropItem(event)" ondragend="dragEnd(event)">
+      <div class="q-header">
+        <span class="drag-handle" title="Drag to reorder">⠿</span>
+        <span class="q-number">Q${i + 1}</span>
+        <span class="q-text">${escHtml(q.question)}</span>
+        <div class="q-actions">
+          <button class="btn btn-ghost btn-sm" onclick="editQuestion(${i})" title="Edit">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteQuestion(${i})" title="Delete">🗑️</button>
+        </div>
+      </div>
+      <div class="q-options">
+        ${q.options.map((o, j) => `<div class="q-option${j === q.correctIndex ? ' correct' : ''}">${escHtml(o)}</div>`).join('')}
+      </div>
+      ${q.explanation ? `<div class="q-explanation">${escHtml(q.explanation)}</div>` : ''}
+      <div class="edit-form" id="editForm${i}" style="display:none;"></div>
+    </div>
+  `).join('');
+}
+
+function addNewQuestion() {
+  questions.push({ question: '', options: ['', '', '', ''], correctIndex: 0, explanation: '' });
+  updateBadge();
+  renderEditor();
+  editQuestion(questions.length - 1);
+  const el = document.querySelector(`[data-index="${questions.length - 1}"]`);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function editQuestion(idx) {
+  const q = questions[idx];
+  const form = document.getElementById('editForm' + idx);
+  const item = form.closest('.question-item');
+  // Close any other open forms
+  document.querySelectorAll('.question-item.editing').forEach(el => {
+    el.classList.remove('editing');
+    el.querySelector('.edit-form').style.display = 'none';
+  });
+  item.classList.add('editing');
+  form.style.display = 'block';
+  const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+  form.innerHTML = `
+    <div class="input-group">
+      <label>Question text</label>
+      <input type="text" id="eq${idx}" value="${escAttr(q.question)}" placeholder="Enter question...">
+    </div>
+    <label style="margin-bottom:8px;">Options (select correct answer)</label>
+    ${q.options.map((o, j) => `
+      <div class="option-edit-row">
+        <input type="radio" name="correct${idx}" value="${j}" ${j === q.correctIndex ? 'checked' : ''}>
+        <span class="radio-label">${letters[j] || (j + 1)} ✓</span>
+        <input type="text" id="eo${idx}_${j}" value="${escAttr(o)}" placeholder="Option ${letters[j] || (j + 1)}">
+        ${q.options.length > 2 ? `<button class="btn btn-danger btn-sm" onclick="removeOption(${idx},${j})">×</button>` : ''}
+      </div>
+    `).join('')}
+    ${q.options.length < 6 ? `<button class="btn btn-ghost btn-sm" onclick="addOption(${idx})" style="margin:4px 0 12px 60px;">+ Add option</button>` : ''}
+    <div class="input-group">
+      <label>Explanation (optional)</label>
+      <input type="text" id="ex${idx}" value="${escAttr(q.explanation)}" placeholder="Why is this the correct answer?">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary btn-sm" onclick="saveQuestion(${idx})">Save</button>
+      <button class="btn btn-secondary btn-sm" onclick="cancelEdit(${idx})">Cancel</button>
+    </div>
+  `;
+}
+
+function saveQuestion(idx) {
+  const q = questions[idx];
+  q.question = document.getElementById('eq' + idx).value.trim();
+  const correctRadio = document.querySelector(`input[name="correct${idx}"]:checked`);
+  q.correctIndex = correctRadio ? parseInt(correctRadio.value) : 0;
+  q.options = [];
+  let j = 0;
+  while (document.getElementById('eo' + idx + '_' + j)) {
+    q.options.push(document.getElementById('eo' + idx + '_' + j).value.trim());
+    j++;
+  }
+  q.explanation = document.getElementById('ex' + idx).value.trim();
+  // Validate
+  if (!q.question) { showToast('Question text is required'); return; }
+  if (q.options.filter(o => o).length < 2) { showToast('At least 2 options are required'); return; }
+  updateBadge();
+  renderEditor();
+  showToast('Question saved');
+}
+
+function cancelEdit(idx) {
+  if (!questions[idx].question && !questions[idx].options.some(o => o)) {
+    questions.splice(idx, 1);
+    updateBadge();
+  }
+  renderEditor();
+}
+
+function deleteQuestion(idx) {
+  questions.splice(idx, 1);
+  updateBadge();
+  renderEditor();
+  showToast('Question deleted');
+}
+
+function removeOption(qIdx, oIdx) {
+  const q = questions[qIdx];
+  q.options.splice(oIdx, 1);
+  if (q.correctIndex >= oIdx && q.correctIndex > 0) q.correctIndex--;
+  editQuestion(qIdx);
+}
+
+function addOption(qIdx) {
+  // Save current edits first
+  const q = questions[qIdx];
+  q.question = document.getElementById('eq' + qIdx).value.trim();
+  let j = 0;
+  q.options = [];
+  while (document.getElementById('eo' + qIdx + '_' + j)) {
+    q.options.push(document.getElementById('eo' + qIdx + '_' + j).value.trim());
+    j++;
+  }
+  const correctRadio = document.querySelector(`input[name="correct${qIdx}"]:checked`);
+  q.correctIndex = correctRadio ? parseInt(correctRadio.value) : 0;
+  q.explanation = document.getElementById('ex' + qIdx).value.trim();
+  q.options.push('');
+  renderEditor();
+  editQuestion(qIdx);
+}
+
+function clearAllQuestions() {
+  if (questions.length === 0) return;
+  if (!confirm('Remove all ' + questions.length + ' questions?')) return;
+  questions = [];
+  updateBadge();
+  renderEditor();
+  showToast('All questions cleared');
+}
+
+// Drag reorder
+let dragIdx = null;
+function dragStart(e) {
+  dragIdx = parseInt(e.currentTarget.dataset.index);
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function dragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }
+function dragEnter(e) { e.currentTarget.classList.add('drag-over'); }
+function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function dragEnd(e) {
+  document.querySelectorAll('.question-item').forEach(el => {
+    el.classList.remove('dragging', 'drag-over');
+  });
+}
+function dropItem(e) {
+  e.preventDefault();
+  const targetIdx = parseInt(e.currentTarget.dataset.index);
+  if (dragIdx === null || dragIdx === targetIdx) return;
+  const item = questions.splice(dragIdx, 1)[0];
+  questions.splice(targetIdx, 0, item);
+  renderEditor();
+}
+
+// ═══════════════════════════════════════════════════════
+//  QUIZ MODE
+// ═══════════════════════════════════════════════════════
+function resetQuiz() {
+  const area = document.getElementById('quizArea');
+  const empty = document.getElementById('quizEmpty');
+  if (questions.length === 0) {
+    area.innerHTML = '';
+    empty.style.display = 'block';
+    updateProgress(0, 1);
+    return;
+  }
+  empty.style.display = 'none';
+  const shuffle = document.getElementById('shuffleToggle').checked;
+  let order = questions.map((_, i) => i);
+  if (shuffle) {
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+  }
+  quizState = { index: 0, answers: new Array(order.length).fill(-1), order, revealed: false };
+  renderQuizSlide();
+}
+
+function renderQuizSlide() {
+  const { index, order, answers } = quizState;
+  const mode = document.getElementById('quizMode').value;
+  const area = document.getElementById('quizArea');
+
+  if (index >= order.length) {
+    renderResults();
+    return;
+  }
+
+  const q = questions[order[index]];
+  const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+  const selected = answers[index];
+  const isRevealed = quizState.revealed;
+
+  updateProgress(index, order.length);
+
+  let optionsHtml = q.options.map((o, j) => {
+    let cls = 'quiz-option-btn';
+    if (selected === j) cls += ' selected';
+    if (isRevealed) {
+      cls += ' disabled';
+      if (j === q.correctIndex) cls += ' correct-reveal';
+      else if (j === selected && j !== q.correctIndex) cls += ' incorrect-reveal';
+    }
+    return `<button class="${cls}" onclick="selectOption(${j})" ${isRevealed ? 'disabled' : ''}>
+      <span class="option-letter">${letters[j] || (j + 1)}</span>
+      <span>${escHtml(o)}</span>
+    </button>`;
+  }).join('');
+
+  let feedbackHtml = '';
+  if (isRevealed && mode === 'study') {
+    const correct = selected === q.correctIndex;
+    feedbackHtml = `<div class="quiz-feedback show ${correct ? 'correct-fb' : 'incorrect-fb'}">
+      <strong>${correct ? '✓ Correct' : '✗ Incorrect'}</strong>
+      ${!correct ? `<br>The correct answer is: <strong>${escHtml(q.options[q.correctIndex])}</strong>` : ''}
+      ${q.explanation ? `<br><br>${escHtml(q.explanation)}` : ''}
+    </div>`;
+  }
+
+  area.innerHTML = `
+    <div class="quiz-slide">
+      <div class="quiz-question-text">${escHtml(q.question)}</div>
+      <div class="quiz-options">${optionsHtml}</div>
+      ${feedbackHtml}
+    </div>
+    <div class="quiz-nav">
+      <button class="btn btn-secondary" onclick="prevSlide()" ${index === 0 ? 'disabled' : ''}>← Previous</button>
+      <span style="font-size:0.85rem;color:var(--text-muted);align-self:center;">${index + 1} of ${order.length}</span>
+      ${index === order.length - 1
+        ? `<button class="btn btn-primary" onclick="finishQuiz()">${mode === 'test' ? 'Finish &amp; Score' : 'View Results'}</button>`
+        : `<button class="btn btn-primary" onclick="nextSlide()">Next →</button>`
+      }
+    </div>
+  `;
+}
+
+function selectOption(j) {
+  const mode = document.getElementById('quizMode').value;
+  quizState.answers[quizState.index] = j;
+  if (mode === 'study') {
+    quizState.revealed = true;
+  }
+  renderQuizSlide();
+}
+
+function nextSlide() {
+  quizState.index++;
+  quizState.revealed = false;
+  renderQuizSlide();
+}
+
+function prevSlide() {
+  if (quizState.index > 0) {
+    quizState.index--;
+    quizState.revealed = false;
+    renderQuizSlide();
+  }
+}
+
+function finishQuiz() {
+  quizState.index = quizState.order.length;
+  renderResults();
+}
+
+function renderResults() {
+  const { order, answers } = quizState;
+  const area = document.getElementById('quizArea');
+  let correct = 0;
+  const reviews = [];
+
+  order.forEach((qi, i) => {
+    const q = questions[qi];
+    const ans = answers[i];
+    const isCorrect = ans === q.correctIndex;
+    if (isCorrect) correct++;
+    reviews.push({ q, ans, isCorrect });
+  });
+
+  const total = order.length;
+  const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+  updateProgress(total, total);
+
+  area.innerHTML = `
+    <div class="card results-card">
+      <div class="results-score">${pct}%</div>
+      <div class="results-label">${correct} out of ${total} correct</div>
+      <div class="results-breakdown">
+        <div class="results-stat"><div class="results-stat-num correct-c">${correct}</div><div class="results-stat-label">Correct</div></div>
+        <div class="results-stat"><div class="results-stat-num incorrect-c">${total - correct}</div><div class="results-stat-label">Incorrect</div></div>
+        <div class="results-stat"><div class="results-stat-num">${answers.filter(a => a === -1).length}</div><div class="results-stat-label">Unanswered</div></div>
+      </div>
+      <div class="btn-row" style="justify-content:center;">
+        <button class="btn btn-primary" onclick="resetQuiz()">Retake Quiz</button>
+      </div>
+    </div>
+    <h3 style="font-family:var(--serif);margin:24px 0 16px;">Review</h3>
+    ${reviews.map((r, i) => `
+      <div class="review-item ${r.isCorrect ? 'was-correct' : 'was-incorrect'}">
+        <div class="review-q">Q${i + 1}. ${escHtml(r.q.question)}</div>
+        <div class="review-answer">
+          ${r.ans >= 0 ? `Your answer: <strong>${escHtml(r.q.options[r.ans])}</strong>` : '<em>Not answered</em>'}
+          ${!r.isCorrect ? `<br>Correct answer: <strong style="color:var(--correct)">${escHtml(r.q.options[r.q.correctIndex])}</strong>` : ''}
+          ${r.q.explanation ? `<br><em style="color:var(--text-light)">${escHtml(r.q.explanation)}</em>` : ''}
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+function updateProgress(current, total) {
+  const pct = total > 0 ? (current / total) * 100 : 0;
+  document.getElementById('quizProgressFill').style.width = pct + '%';
+  document.getElementById('quizProgress').textContent = current + ' / ' + total;
+}
+
+// ═══════════════════════════════════════════════════════
+//  EXPORT
+// ═══════════════════════════════════════════════════════
+function updateExportState() {
+  document.getElementById('exportEmpty').style.display = questions.length === 0 ? 'block' : 'none';
+}
+
+function getMetadata() {
+  return {
+    title: document.getElementById('quizTitle').value.trim() || 'Untitled Quiz',
+    author: document.getElementById('quizAuthor').value.trim() || '',
+    description: document.getElementById('quizDescription').value.trim() || ''
+  };
+}
+
+function downloadFile(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Downloaded ' + filename);
+}
+
+function exportJSON() {
+  if (questions.length === 0) { showToast('No questions to export'); return; }
+  const meta = getMetadata();
+  const data = { title: meta.title, author: meta.author, description: meta.description, questions };
+  downloadFile(slugify(meta.title) + '.json', JSON.stringify(data, null, 2), 'application/json');
+}
+
+function exportCSV() {
+  if (questions.length === 0) { showToast('No questions to export'); return; }
+  const meta = getMetadata();
+  const maxOpts = Math.max(...questions.map(q => q.options.length));
+  let header = ['Question'];
+  for (let i = 0; i < maxOpts; i++) header.push('Option ' + String.fromCharCode(65 + i));
+  header.push('Correct Answer', 'Explanation');
+  const rows = [header.map(csvEsc).join(',')];
+  for (const q of questions) {
+    const row = [q.question];
+    for (let i = 0; i < maxOpts; i++) row.push(q.options[i] || '');
+    row.push(String.fromCharCode(65 + q.correctIndex));
+    row.push(q.explanation);
+    rows.push(row.map(csvEsc).join(','));
+  }
+  downloadFile(slugify(meta.title) + '.csv', rows.join('\n'), 'text/csv');
+}
+
+function exportAiken() {
+  if (questions.length === 0) { showToast('No questions to export'); return; }
+  const meta = getMetadata();
+  const letters = 'ABCDEFGHIJ';
+  const lines = questions.map(q => {
+    let s = q.question + '\n';
+    q.options.forEach((o, i) => { s += letters[i] + '. ' + o + '\n'; });
+    s += 'ANSWER: ' + letters[q.correctIndex];
+    return s;
+  });
+  downloadFile(slugify(meta.title) + '_aiken.txt', lines.join('\n\n'), 'text/plain');
+}
+
+function exportGIFT() {
+  if (questions.length === 0) { showToast('No questions to export'); return; }
+  const meta = getMetadata();
+  const lines = questions.map((q, i) => {
+    let s = `::Q${i + 1}:: ${giftEsc(q.question)} {\n`;
+    q.options.forEach((o, j) => {
+      s += (j === q.correctIndex ? '  =' : '  ~') + giftEsc(o) + '\n';
+    });
+    s += '}';
+    return s;
+  });
+  downloadFile(slugify(meta.title) + '_gift.txt', lines.join('\n\n'), 'text/plain');
+}
+
+function exportMoodleXML() {
+  if (questions.length === 0) { showToast('No questions to export'); return; }
+  const meta = getMetadata();
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<quiz>\n';
+  xml += `  <question type="category"><category><text>${xmlEsc(meta.title)}</text></category></question>\n`;
+  questions.forEach((q, i) => {
+    xml += `  <question type="multichoice">\n`;
+    xml += `    <name><text>Q${i + 1}</text></name>\n`;
+    xml += `    <questiontext format="html"><text><![CDATA[${q.question}]]></text></questiontext>\n`;
+    xml += `    <shuffleanswers>1</shuffleanswers>\n`;
+    xml += `    <single>true</single>\n`;
+    if (q.explanation) {
+      xml += `    <generalfeedback format="html"><text><![CDATA[${q.explanation}]]></text></generalfeedback>\n`;
+    }
+    q.options.forEach((o, j) => {
+      const frac = j === q.correctIndex ? 100 : 0;
+      xml += `    <answer fraction="${frac}" format="html">\n`;
+      xml += `      <text><![CDATA[${o}]]></text>\n`;
+      xml += `    </answer>\n`;
+    });
+    xml += `  </question>\n`;
+  });
+  xml += '</quiz>';
+  downloadFile(slugify(meta.title) + '_moodle.xml', xml, 'application/xml');
+}
+
+function exportStandaloneHTML() {
+  if (questions.length === 0) { showToast('No questions to export'); return; }
+  const meta = getMetadata();
+  const qJSON = JSON.stringify(questions);
+  const html = buildStandaloneHTML(meta, qJSON);
+  downloadFile(slugify(meta.title) + '_quiz.html', html, 'text/html');
+}
+
+function buildStandaloneHTML(meta, qJSON) {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${escHtml(meta.title)}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=DM+Sans:wght@400;500;600;700&display=swap');
+  :root{--bg:#faf8f5;--surface:#fff;--surface-alt:#f3f0eb;--border:#e2ddd5;--text:#2c2418;--text-muted:#7a6e5d;--accent:#2563eb;--accent-light:#eff6ff;--correct:#2d7d46;--correct-bg:#edf7f0;--incorrect:#c43e3e;--incorrect-bg:#fdf0f0;--serif:'Source Serif 4',Georgia,serif;--sans:'DM Sans',sans-serif;--radius:6px}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;display:flex;flex-direction:column;align-items:center}
+  .header{text-align:center;padding:32px 20px 16px;max-width:700px}
+  .title{font-family:var(--serif);font-size:1.6rem;font-weight:700}
+  .title span{color:var(--accent)}
+  .subtitle{font-size:0.85rem;color:var(--text-muted);margin-top:4px}
+  .controls{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+  .mode-btn{font-family:var(--sans);font-size:0.85rem;padding:8px 16px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer}
+  .mode-btn.active{border-color:var(--accent);background:var(--accent-light);color:var(--accent);font-weight:600}
+  .progress-bar{width:100%;max-width:700px;height:4px;background:var(--surface-alt);border-radius:2px;margin-bottom:20px;overflow:hidden}
+  .progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width 0.4s ease;width:0%}
+  .quiz-container{max-width:700px;width:100%;padding:0 20px 40px}
+  .slide{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:28px;box-shadow:0 4px 12px rgba(44,36,24,0.08)}
+  .q-text{font-family:var(--serif);font-size:1.15rem;font-weight:600;line-height:1.5;margin-bottom:20px}
+  .options{display:flex;flex-direction:column;gap:10px}
+  .opt{font-family:var(--sans);font-size:0.92rem;text-align:left;padding:12px 16px;border:2px solid var(--border);border-radius:var(--radius);background:var(--surface);cursor:pointer;display:flex;align-items:flex-start;gap:10px;line-height:1.5;transition:all 0.2s}
+  .opt:hover:not(.locked){border-color:#8b7355;background:var(--surface-alt)}
+  .opt .letter{font-weight:700;font-size:0.82rem;color:var(--text-muted);flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--surface-alt);display:flex;align-items:center;justify-content:center}
+  .opt.selected{border-color:var(--accent);background:var(--accent-light)}
+  .opt.selected .letter{background:var(--accent);color:#fff}
+  .opt.correct-r{border-color:var(--correct);background:var(--correct-bg)}
+  .opt.correct-r .letter{background:var(--correct);color:#fff}
+  .opt.incorrect-r{border-color:var(--incorrect);background:var(--incorrect-bg)}
+  .opt.incorrect-r .letter{background:var(--incorrect);color:#fff}
+  .opt.locked{cursor:default;opacity:0.85}
+  .feedback{margin-top:14px;padding:14px;border-radius:var(--radius);font-size:0.88rem;line-height:1.6;display:none}
+  .feedback.show{display:block}
+  .feedback.ok{background:var(--correct-bg);border:1px solid var(--correct);color:var(--correct)}
+  .feedback.no{background:var(--incorrect-bg);border:1px solid var(--incorrect);color:var(--incorrect)}
+  .nav{display:flex;justify-content:space-between;margin-top:16px;gap:10px}
+  .btn{font-family:var(--sans);font-size:0.85rem;font-weight:600;padding:10px 18px;border-radius:var(--radius);border:none;cursor:pointer;transition:all 0.2s}
+  .btn-p{background:var(--accent);color:#fff}
+  .btn-p:hover{background:#1d4ed8}
+  .btn-s{background:var(--surface-alt);color:var(--text);border:1px solid var(--border)}
+  .btn-s:hover{background:var(--border)}
+  .btn:disabled{opacity:0.4;cursor:default}
+  .results{text-align:center;padding:40px 20px}
+  .score{font-family:var(--serif);font-size:3.2rem;font-weight:700;color:var(--accent)}
+  .score-label{font-size:0.95rem;color:var(--text-muted);margin-bottom:20px}
+  .review-item{text-align:left;padding:16px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px}
+  .review-item.ok{border-left:4px solid var(--correct)}
+  .review-item.no{border-left:4px solid var(--incorrect)}
+  .review-q{font-family:var(--serif);font-weight:600;margin-bottom:6px}
+  .review-a{font-size:0.85rem;color:var(--text-muted)}
+  .review-a strong{color:var(--text)}
+  .info{font-size:0.85rem;color:var(--text-muted);text-align:center}
+  @media(max-width:640px){.header{padding:20px 16px 12px}.quiz-container{padding:0 12px 32px}.slide{padding:20px}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="title">${escHtml(meta.title)}</div>
+  ${meta.description ? '<div class="subtitle">' + escHtml(meta.description) + '</div>' : ''}
+  ${meta.author ? '<div class="subtitle">By ' + escHtml(meta.author) + '</div>' : ''}
+  <div class="controls">
+    <button class="mode-btn active" onclick="setMode('test',this)">Test mode</button>
+    <button class="mode-btn" onclick="setMode('study',this)">Study mode</button>
+    <label style="display:inline-flex;align-items:center;gap:6px;font-size:0.85rem;cursor:pointer">
+      <input type="checkbox" id="shuf" onchange="restart()"> Shuffle
+    </label>
+  </div>
+</div>
+<div class="progress-bar"><div class="progress-fill" id="pf"></div></div>
+<div class="quiz-container" id="qa"></div>
+<script>
+var Qs=${qJSON};
+var mode='test',idx=0,ans=[],order=[];
+function setMode(m,el){mode=m;document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active')});el.classList.add('active');restart()}
+function restart(){idx=0;ans=[];order=Qs.map(function(_,i){return i});if(document.getElementById('shuf').checked){for(var i=order.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=order[i];order[i]=order[j];order[j]=t}}ans=new Array(order.length).fill(-1);render()}
+function render(){
+  if(idx>=order.length){showResults();return}
+  var q=Qs[order[idx]],L='ABCDEF',sel=ans[idx],rev=window._rev||false;
+  document.getElementById('pf').style.width=(idx/order.length*100)+'%';
+  var h='<div class="slide"><div class="q-text">'+esc(q.question)+'</div><div class="options">';
+  q.options.forEach(function(o,j){
+    var c='opt';
+    if(sel===j)c+=' selected';
+    if(rev){c+=' locked';if(j===q.correctIndex)c+=' correct-r';else if(j===sel&&j!==q.correctIndex)c+=' incorrect-r'}
+    h+='<button class="'+c+'" '+(rev?'disabled':' onclick="pick('+j+')"')+'><span class="letter">'+L[j]+'</span><span>'+esc(o)+'</span></button>';
+  });
+  h+='</div>';
+  if(rev&&mode==='study'){
+    var ok=sel===q.correctIndex;
+    h+='<div class="feedback show '+(ok?'ok':'no')+'"><strong>'+(ok?'\\u2713 Correct':'\\u2717 Incorrect')+'</strong>';
+    if(!ok)h+='<br>Correct answer: <strong>'+esc(q.options[q.correctIndex])+'</strong>';
+    if(q.explanation)h+='<br><br>'+esc(q.explanation);
+    h+='</div>';
+  }
+  h+='</div><div class="nav">';
+  h+='<button class="btn btn-s" onclick="prev()" '+(idx===0?'disabled':'')+'>\\u2190 Previous</button>';
+  h+='<span class="info">'+(idx+1)+' of '+order.length+'</span>';
+  h+=idx===order.length-1?'<button class="btn btn-p" onclick="finish()">'+(mode==='test'?'Finish \\u0026 Score':'View Results')+'</button>':'<button class="btn btn-p" onclick="next()">Next \\u2192</button>';
+  h+='</div>';
+  document.getElementById('qa').innerHTML=h;
+}
+function pick(j){ans[idx]=j;if(mode==='study'){window._rev=true}render()}
+function next(){idx++;window._rev=false;render()}
+function prev(){if(idx>0){idx--;window._rev=false;render()}}
+function finish(){idx=order.length;showResults()}
+function showResults(){
+  document.getElementById('pf').style.width='100%';
+  var cor=0;order.forEach(function(qi,i){if(ans[i]===Qs[qi].correctIndex)cor++});
+  var t=order.length,pct=t?Math.round(cor/t*100):0;
+  var h='<div class="slide results"><div class="score">'+pct+'%</div><div class="score-label">'+cor+' out of '+t+' correct</div>';
+  h+='<button class="btn btn-p" onclick="restart()" style="margin-bottom:24px">Retake Quiz</button></div>';
+  h+='<h3 style="font-family:var(--serif);margin:20px 0 12px">Review</h3>';
+  order.forEach(function(qi,i){
+    var q=Qs[qi],a=ans[i],ok=a===q.correctIndex;
+    h+='<div class="review-item '+(ok?'ok':'no')+'"><div class="review-q">Q'+(i+1)+'. '+esc(q.question)+'</div><div class="review-a">';
+    h+=a>=0?'Your answer: <strong>'+esc(q.options[a])+'</strong>':'<em>Not answered</em>';
+    if(!ok)h+='<br>Correct: <strong style="color:var(--correct)">'+esc(q.options[q.correctIndex])+'</strong>';
+    if(q.explanation)h+='<br><em style="color:#a89b88">'+esc(q.explanation)+'</em>';
+    h+='</div></div>';
+  });
+  document.getElementById('qa').innerHTML=h;
+}
+function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
+restart();
+<\/script>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'copilotStudyPayload';
+  function adaptFromStudyPayload(payload){
+    if (!payload || !payload.quiz || !Array.isArray(payload.quiz.questions)) return false;
+    questions = payload.quiz.questions.map(q => ({
+      question: q.question || '',
+      options: Array.isArray(q.options) ? q.options.filter(x => x !== undefined && x !== null).map(x => String(x)) : ['', '', '', ''],
+      correctIndex: Number.isInteger(q.correct_index) ? q.correct_index : (Number.isInteger(q.correctIndex) ? q.correctIndex : 0),
+      explanation: q.explanation || ''
+    }));
+    document.getElementById('quizTitle').value = payload.quiz.title || payload.source?.title || 'Untitled Quiz';
+    const authors = Array.isArray(payload.source?.authors) ? payload.source.authors.join(', ') : '';
+    document.getElementById('quizAuthor').value = authors;
+    document.getElementById('quizDescription').value = payload.summary?.plain || payload.quiz.description || '';
+    updateBadge();
+    renderEditor();
+    resetQuiz();
+    updateExportState();
+    switchTab('quiz');
+    showToast('Loaded quiz from Study Tool payload');
+    return true;
+  }
+  window.importStudyPayloadToQuiz = adaptFromStudyPayload;
+  document.addEventListener('DOMContentLoaded', function(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) adaptFromStudyPayload(JSON.parse(raw));
+    }catch(e){ console.warn('Study payload import failed', e); }
+  });
+})();
+</script>
+
+</body>
+</html>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s || '';
+  return d.innerHTML;
+}
+function escAttr(s) { return (s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+function csvEsc(s) { s = String(s || ''); return s.includes(',') || s.includes('"') || s.includes('\n') ? '"' + s.replace(/"/g, '""') + '"' : s; }
+function xmlEsc(s) { return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+function giftEsc(s) { return (s || '').replace(/[~=#{}:]/g, '\\$&'); }
+function slugify(s) { return (s || 'quiz').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').substring(0, 60) || 'quiz'; }
+
+function updateBadge() {
+  const n = questions.length;
+  document.getElementById('questionCountBadge').textContent = n + ' question' + (n !== 1 ? 's' : '');
+}
+
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(el._timer);
+  el._timer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+document.getElementById('importFormat').addEventListener('change', () => {
+  document.getElementById('formatHelp').style.display = 'none';
+});
+
+// Auto-import on paste when format is NotebookLM paste
+document.getElementById('importData').addEventListener('paste', () => {
+  const fmt = document.getElementById('importFormat').value;
+  if (fmt === 'nlm') {
+    setTimeout(() => {
+      const input = document.getElementById('importData');
+      if (input.value.trim().length > 30) {
+        importQuiz();
+      }
+    }, 100);
+  }
+});
+</script>
+
+<script>
+(function(){
+  const STORAGE_KEY = 'copilotStudyPayload';
+  function adaptFromStudyPayload(payload){
+    if (!payload || !payload.quiz || !Array.isArray(payload.quiz.questions)) return false;
+    questions = payload.quiz.questions.map(q => ({
+      question: q.question || '',
+      options: Array.isArray(q.options) ? q.options.filter(x => x !== undefined && x !== null).map(x => String(x)) : ['', '', '', ''],
+      correctIndex: Number.isInteger(q.correct_index) ? q.correct_index : (Number.isInteger(q.correctIndex) ? q.correctIndex : 0),
+      explanation: q.explanation || ''
+    }));
+    document.getElementById('quizTitle').value = payload.quiz.title || payload.source?.title || 'Untitled Quiz';
+    const authors = Array.isArray(payload.source?.authors) ? payload.source.authors.join(', ') : '';
+    document.getElementById('quizAuthor').value = authors;
+    document.getElementById('quizDescription').value = payload.summary?.plain || payload.quiz.description || '';
+    updateBadge();
+    renderEditor();
+    resetQuiz();
+    updateExportState();
+    switchTab('quiz');
+    showToast('Loaded quiz from Study Tool payload');
+    return true;
+  }
+  window.importStudyPayloadToQuiz = adaptFromStudyPayload;
+  document.addEventListener('DOMContentLoaded', function(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) adaptFromStudyPayload(JSON.parse(raw));
+    }catch(e){ console.warn('Study payload import failed', e); }
+  });
+})();
+</script>
+
+</body>
+</html>

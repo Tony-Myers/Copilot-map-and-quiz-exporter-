@@ -1,40 +1,69 @@
 {
-  "version": "1.1",
+  "version": "1.0",
   "source": {
     "origin": "copilot",
-    "title": "Example Article on Bayesian Thinking",
-    "authors": ["A. Researcher", "B. Scholar"],
-    "citation": "Researcher, A., & Scholar, B. (2026). Example Article on Bayesian Thinking. Journal of Examples, 12(3), 1-18.",
+    "title": "Example Article",
+    "authors": [
+      "A. Author",
+      "B. Author"
+    ],
+    "citation": "Author, A. (2026). Example Article. Journal of Examples.",
     "year": 2026,
-    "source_files": ["example-article.pdf"]
+    "source_files": [
+      "example.pdf"
+    ]
   },
   "summary": {
-    "plain": "This article argues that Bayesian reasoning provides a coherent framework for scientific inference when prior assumptions are made explicit and updated transparently in light of data.",
+    "plain": "Example summary.",
     "key_points": [
-      "Bayesian inference combines prior information with observed data.",
-      "Model comparison should consider predictive performance.",
-      "Transparent assumptions are central to scientific interpretation."
+      "Point 1",
+      "Point 2"
     ]
   },
   "quiz": {
-    "title": "Example Article on Bayesian Thinking quiz",
-    "description": "Quiz generated from article notes.",
+    "title": "Example Article quiz",
+    "description": "Quiz from article",
     "questions": [
       {
-        "question": "What is combined with observed data in Bayesian inference?",
-        "options": ["Only p-values", "Prior information", "Sampling error alone", "Null hypotheses only"],
-        "correct_index": 1,
-        "explanation": "Bayesian inference combines prior information with observed data.",
-        "source_ref": "Introduction"
+        "question": "What is one key point?",
+        "options": [
+          "Point 1",
+          "Point X",
+          "Point Y",
+          "Point Z"
+        ],
+        "correct_index": 0,
+        "explanation": "Because Point 1 is listed.",
+        "source_ref": "Summary"
       }
     ]
   },
   "mind_map": {
-    "title": "Example Article on Bayesian Thinking",
+    "title": "Example Article",
     "layout": "radial",
     "nodes": [
-      {"id": "root", "label": "Example Article on Bayesian Thinking", "parent": null, "source_ref": "Title", "note": "Main concept", "url": "", "attachedImage": "", "attachedDocs": [], "attachedLinks": []},
-      {"id": "node_1", "label": "Bayesian inference", "parent": "root", "source_ref": "Introduction", "note": "Core framework", "url": "https://example.org", "attachedImage": "", "attachedDocs": [{"name": "article.pdf", "url": "https://example.org/article.pdf"}], "attachedLinks": [{"label": "External note", "url": "https://example.org/note"}]}
+      {
+        "id": "root",
+        "label": "Example Article",
+        "parent": null,
+        "source_ref": "Title",
+        "note": "",
+        "url": "",
+        "attachedLinks": [],
+        "attachedDocs": [],
+        "attachedImage": null
+      },
+      {
+        "id": "n1",
+        "label": "Point 1",
+        "parent": "root",
+        "source_ref": "Summary",
+        "note": "",
+        "url": "",
+        "attachedLinks": [],
+        "attachedDocs": [],
+        "attachedImage": null
+      }
     ]
   }
 }

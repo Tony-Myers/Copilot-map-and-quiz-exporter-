@@ -1,34 +1,30 @@
-# Study Quiz & Mind Map Tool
+# Study Tool Launcher (v2)
 
-A combined GitHub Pages app for working with structured study payloads generated from Microsoft Copilot or similar tools.
+This version takes a different approach from the stripped-down combined app.
 
-## What changed
+It preserves the original full-featured tools by:
+- using a launcher page (`index.html`) for Copilot JSON import
+- opening the original quiz app as `quiz-tool.html`
+- opening the original mind map app as `mindmap-tool.html`
 
-This version extends the earlier MVP by:
-- restoring useful quiz exports: Standalone HTML, Moodle XML, Aiken, GIFT, CSV, worksheet
-- restoring richer mind-map support: layout setting, attached links, attached documents, attached image field
-- adding Standalone HTML Mind Map export
-- keeping full JSON exports in an Advanced section
+The launcher stores the Copilot payload in browser localStorage under:
+`copilotStudyPayload`
 
-## Files to replace in the combined app
+Both full-featured tools contain an adapter script that reads that payload on load and imports it into their native internal data structures.
 
-- `index.html`
-- `styles.css`
-- `app.js`
-- `js/payload.js`
-- `js/session.js`
-- `js/quiz.js`
-- `js/mindmap.js`
-- `js/export.js`
+## Benefits
 
-## Session backend
+- Quiz tool keeps study mode and test mode.
+- Quiz tool keeps Standalone HTML, Moodle XML, Aiken, GIFT, CSV and JSON export.
+- Mind map tool keeps interactive standalone HTML export.
+- Mind map tool keeps left-to-right, radial and top-to-bottom layouts.
+- Mind map tool keeps image, document and link attachments.
 
-Edit `js/session.js` and set:
+## Deploy
 
-```js
-const SESSION_API_BASE = "https://YOUR-BACKEND-URL.example.com";
-```
+Upload all files in this folder to a new GitHub Pages repository or replace the existing repo contents.
 
-## Payload format
+## Note
 
-See `docs/example-payload.json`.
+This is a launcher + adapter architecture, not a stripped-down reimplementation.
+That is deliberate: it preserves the functionality of the original apps.
