@@ -1,1 +1,30 @@
 :root{--bg:#f5f7fb;--panel:#fff;--text:#1f2937;--muted:#6b7280;--line:#d1d5db;--accent:#1d4ed8;--accent-hover:#1e40af;--success:#065f46;--danger:#b91c1c;--shadow:0 8px 24px rgba(0,0,0,.06);--radius:16px}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--text);background:var(--bg);line-height:1.45}.wrap{width:min(1100px,calc(100% - 2rem));margin:0 auto}.site-header{background:linear-gradient(135deg,#0f172a,#1d4ed8);color:#fff;padding:2rem 0 1.5rem;margin-bottom:1.25rem}.site-header h1{margin:0 0 .25rem;font-size:2rem}.subtitle{margin:0;opacity:.92}.panel{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem 1rem 1.25rem;margin-bottom:1rem}.label,.meta-label{font-weight:700;margin-bottom:.35rem;display:block}.meta-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;margin-bottom:1rem}.meta-block{margin-bottom:1rem}.meta-value{background:#f9fafb;border:1px solid var(--line);border-radius:10px;padding:.75rem;min-height:44px;white-space:pre-wrap}textarea,input[type=text]{width:100%;padding:.75rem;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}textarea{min-height:260px;resize:vertical}button,.buttonlike{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:10px;padding:.65rem .9rem;font:inherit;cursor:pointer;text-decoration:none;display:inline-block}button:hover,.buttonlike:hover{background:#f3f4f6}.primary{background:var(--accent);border-color:var(--accent);color:#fff}.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}.button-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem}.status{margin-top:1rem;padding:.75rem;border-radius:10px;display:none}.status.show{display:block}.status.success{background:#ecfdf5;color:var(--success);border:1px solid #a7f3d0}.status.error{background:#fef2f2;color:var(--danger);border:1px solid #fecaca}.small-note{color:var(--muted);font-size:.92rem}
+/* Highlight paste box when arriving from Copilot link */
+.paste-highlight{
+  outline:3px solid #2563eb;
+  box-shadow:0 0 0 6px rgba(37,99,235,0.15);
+  transition:box-shadow .2s ease, outline .2s ease;
+}
+
+/* Help box styling for quick instructions */
+.help-box{
+  background:#f8fafc;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:.9rem 1rem;
+  margin-bottom:.75rem;
+}
+
+.help-box strong{
+  display:block;
+  margin-bottom:.3rem;
+}
+
+.help-box ol{
+  margin:.4rem 0 0 1.2rem;
+  padding:0;
+}
+
+.help-box li{
+  margin:.2rem 0;
+}
