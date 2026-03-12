@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Copilot Study Tool</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>Copilot Study Tool</h1>
+      <p class="subtitle">Quiz and mind map workspace for Copilot-generated study payloads</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel">
+      <h2>Load study payload</h2>
+
+      <div class="load-grid">
+        <div>
+          <label for="payloadInput" class="label">Paste JSON payload</label>
+          <textarea id="payloadInput" placeholder='Paste a study payload JSON object here'></textarea>
+
+          <div class="button-row">
+            <button id="loadPayloadBtn" class="primary">Load pasted JSON</button>
+            <button id="clearPayloadBtn">Clear</button>
+          </div>
+        </div>
+
+        <div>
+          <label for="fileInput" class="label">Upload JSON file</label>
+          <input type="file" id="fileInput" accept=".json,application/json" />
+
+          <div class="session-box">
+            <label for="sessionIdInput" class="label">Load from session ID</label>
+            <div class="inline-row">
+              <input type="text" id="sessionIdInput" placeholder="e.g. abc123" />
+              <button id="loadSessionBtn">Load session</button>
+            </div>
+          </div>
+
+          <div class="help-box">
+            <p><strong>Accepted routes</strong></p>
+            <ul>
+              <li>Paste a full study payload JSON object</li>
+              <li>Upload a JSON file</li>
+              <li>Open with <code>?session=abc123</code></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div id="statusMessage" class="status"></div>
+    </section>
+
+    <section class="panel" id="sourcePanel">
+      <h2>Source</h2>
+      <div class="meta-grid">
+        <div>
+          <div class="meta-label">Title</div>
+          <div id="sourceTitle" class="meta-value">No payload loaded</div>
+        </div>
+        <div>
+          <div class="meta-label">Authors</div>
+          <div id="sourceAuthors" class="meta-value">—</div>
+        </div>
+        <div>
+          <div class="meta-label">Year</div>
+          <div id="sourceYear" class="meta-value">—</div>
+        </div>
+        <div>
+          <div class="meta-label">Origin</div>
+          <div id="sourceOrigin" class="meta-value">—</div>
+        </div>
+      </div>
+
+      <div class="meta-block">
+        <div class="meta-label">Citation</div>
+        <div id="sourceCitation" class="meta-value">—</div>
+      </div>
+
+      <div class="meta-block">
+        <div class="meta-label">Summary</div>
+        <div id="sourceSummary" class="meta-value">—</div>
+      </div>
+
+      <div class="meta-block">
+        <div class="meta-label">Key points</div>
+        <ul id="summaryKeyPoints" class="key-points"></ul>
+      </div>
+    </section>
+
+    <nav class="tabs">
+      <button class="tab-button active" data-tab="quizTab">Quiz</button>
+      <button class="tab-button" data-tab="mindMapTab">Mind Map</button>
+      <button class="tab-button" data-tab="exportTab">Export</button>
+    </nav>
+
+    <section id="quizTab" class="tab-panel active panel">
+      <div class="panel-header">
+        <h2>Quiz</h2>
+        <div class="button-row">
+          <button id="addQuestionBtn">Add question</button>
+        </div>
+      </div>
+      <div id="quizContainer"></div>
+    </section>
+
+    <section id="mindMapTab" class="tab-panel panel">
+      <div class="panel-header">
+        <h2>Mind Map</h2>
+        <div class="button-row">
+          <button id="addRootChildBtn">Add child to root</button>
+        </div>
+      </div>
+      <div id="mindMapContainer"></div>
+    </section>
+
+    <section id="exportTab" class="tab-panel panel">
+      <h2>Export</h2>
+
+      <div class="export-grid">
+        <div class="export-card">
+          <h3>Payload</h3>
+          <p>Export the current full study payload as JSON.</p>
+          <button id="exportPayloadBtn" class="primary">Export payload JSON</button>
+        </div>
+
+        <div class="export-card">
+          <h3>Quiz</h3>
+          <p>Export quiz section only as JSON.</p>
+          <button id="exportQuizBtn">Export quiz JSON</button>
+        </div>
+
+        <div class="export-card">
+          <h3>Mind map</h3>
+          <p>Export mind map section only as JSON.</p>
+          <button id="exportMindMapBtn">Export mind map JSON</button>
+        </div>
+
+        <div class="export-card">
+          <h3>OPML</h3>
+          <p>Export the current mind map as OPML.</p>
+          <button id="exportOpmlBtn">Export OPML</button>
+        </div>
+      </div>
+
+      <div class="meta-block">
+        <div class="meta-label">Current payload preview</div>
+        <pre id="payloadPreview" class="payload-preview"></pre>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/payload.js"></script>
+  <script src="js/session.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/mindmap.js"></script>
+  <script src="js/export.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
