@@ -614,81 +614,7 @@
             <outline text='Point 1' />
             <outline text='IMAGE: https://example.com/img.png' />
         </outline>
-    
-<script>
-(function(){
-  const STORAGE_KEY = 'copilotStudyPayload';
-  function buildChildrenMap(nodes){
-    const byParent = new Map();
-    nodes.forEach(n => {
-      const p = n.parent === undefined ? null : n.parent;
-      if (!byParent.has(p)) byParent.set(p, []);
-      byParent.get(p).push(n);
-    });
-    return byParent;
-  }
-  function adaptFromStudyPayload(payload){
-    if (!payload || !payload.mind_map || !Array.isArray(payload.mind_map.nodes)) return false;
-    const srcNodes = payload.mind_map.nodes.slice();
-    const byParent = buildChildrenMap(srcNodes);
-    const flat = [];
-    function walk(parentId, level){
-      const children = byParent.get(parentId) || [];
-      children.forEach(n => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: (() => {
-            const links = Array.isArray(n.attachedLinks) ? n.attachedLinks.slice() : [];
-            if (n.url) links.unshift({label: n.note || 'Open link', url: n.url});
-            return links.length ? links : null;
-          })()
-        });
-        walk(n.id, level + 1);
-      });
-    }
-    walk(null, 0);
-    if (!flat.length && srcNodes.length){
-      // fallback if root uses explicit id but null parent missing
-      const roots = srcNodes.filter(n => n.parent === null || n.parent === undefined);
-      const visit = (n, level) => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: Array.isArray(n.attachedLinks) ? n.attachedLinks : null
-        });
-        srcNodes.filter(x => x.parent === n.id).forEach(c => visit(c, level + 1));
-      };
-      roots.forEach(r => visit(r, 0));
-    }
-    if (!flat.length) return false;
-    nodes = flat;
-    selectedNodeIndex = -1;
-    document.getElementById('mapTitle').value = payload.mind_map.title || payload.source?.title || 'Mind map';
-    document.getElementById('layoutSelect').value = payload.mind_map.layout === 'top-to-bottom' ? 'ttb' : (payload.mind_map.layout || 'radial');
-    setMode('builder');
-    renderNodeList();
-    updateSelectionState();
-    showToast('Loaded mind map from Study Tool payload');
-    return true;
-  }
-  window.importStudyPayloadToMindMap = adaptFromStudyPayload;
-  document.addEventListener('DOMContentLoaded', function(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) adaptFromStudyPayload(JSON.parse(raw));
-    }catch(e){ console.warn('Study payload import failed', e); }
-  });
-})();
-</script>
-
-</body>
+    </body>
 </opml>"></textarea>
             <div class="drop-zone-overlay" id="dropZoneOpml">
                 <div class="drop-zone-text" id="dropZoneText">📁 Drop image or OPML file here</div>
@@ -1604,81 +1530,7 @@ function builderToOPML(title){
     const bodyContent = toOPML(treeRoot, TAB + TAB);
     const safeTitle = escape(title || "Mind Map");
 
-    return '<?xml version="1.0" encoding="UTF-8"?>\n<opml version="2.0">\n    <head>\n        <title>' + safeTitle + '</title>\n    </head>\n    <body>\n' + bodyContent + '\n    
-<script>
-(function(){
-  const STORAGE_KEY = 'copilotStudyPayload';
-  function buildChildrenMap(nodes){
-    const byParent = new Map();
-    nodes.forEach(n => {
-      const p = n.parent === undefined ? null : n.parent;
-      if (!byParent.has(p)) byParent.set(p, []);
-      byParent.get(p).push(n);
-    });
-    return byParent;
-  }
-  function adaptFromStudyPayload(payload){
-    if (!payload || !payload.mind_map || !Array.isArray(payload.mind_map.nodes)) return false;
-    const srcNodes = payload.mind_map.nodes.slice();
-    const byParent = buildChildrenMap(srcNodes);
-    const flat = [];
-    function walk(parentId, level){
-      const children = byParent.get(parentId) || [];
-      children.forEach(n => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: (() => {
-            const links = Array.isArray(n.attachedLinks) ? n.attachedLinks.slice() : [];
-            if (n.url) links.unshift({label: n.note || 'Open link', url: n.url});
-            return links.length ? links : null;
-          })()
-        });
-        walk(n.id, level + 1);
-      });
-    }
-    walk(null, 0);
-    if (!flat.length && srcNodes.length){
-      // fallback if root uses explicit id but null parent missing
-      const roots = srcNodes.filter(n => n.parent === null || n.parent === undefined);
-      const visit = (n, level) => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: Array.isArray(n.attachedLinks) ? n.attachedLinks : null
-        });
-        srcNodes.filter(x => x.parent === n.id).forEach(c => visit(c, level + 1));
-      };
-      roots.forEach(r => visit(r, 0));
-    }
-    if (!flat.length) return false;
-    nodes = flat;
-    selectedNodeIndex = -1;
-    document.getElementById('mapTitle').value = payload.mind_map.title || payload.source?.title || 'Mind map';
-    document.getElementById('layoutSelect').value = payload.mind_map.layout === 'top-to-bottom' ? 'ttb' : (payload.mind_map.layout || 'radial');
-    setMode('builder');
-    renderNodeList();
-    updateSelectionState();
-    showToast('Loaded mind map from Study Tool payload');
-    return true;
-  }
-  window.importStudyPayloadToMindMap = adaptFromStudyPayload;
-  document.addEventListener('DOMContentLoaded', function(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) adaptFromStudyPayload(JSON.parse(raw));
-    }catch(e){ console.warn('Study payload import failed', e); }
-  });
-})();
-</script>
-
-</body>\n</opml>';
+    return '<?xml version="1.0" encoding="UTF-8"?>\n<opml version="2.0">\n    <head>\n        <title>' + safeTitle + '</title>\n    </head>\n    <body>\n' + bodyContent + '\n    </body>\n</opml>';
 }
 
 /* -------------------------
@@ -1752,81 +1604,7 @@ function convertTextToOPML(text, title){
     </head>
     <body>
 ${bodyContent}
-    
-<script>
-(function(){
-  const STORAGE_KEY = 'copilotStudyPayload';
-  function buildChildrenMap(nodes){
-    const byParent = new Map();
-    nodes.forEach(n => {
-      const p = n.parent === undefined ? null : n.parent;
-      if (!byParent.has(p)) byParent.set(p, []);
-      byParent.get(p).push(n);
-    });
-    return byParent;
-  }
-  function adaptFromStudyPayload(payload){
-    if (!payload || !payload.mind_map || !Array.isArray(payload.mind_map.nodes)) return false;
-    const srcNodes = payload.mind_map.nodes.slice();
-    const byParent = buildChildrenMap(srcNodes);
-    const flat = [];
-    function walk(parentId, level){
-      const children = byParent.get(parentId) || [];
-      children.forEach(n => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: (() => {
-            const links = Array.isArray(n.attachedLinks) ? n.attachedLinks.slice() : [];
-            if (n.url) links.unshift({label: n.note || 'Open link', url: n.url});
-            return links.length ? links : null;
-          })()
-        });
-        walk(n.id, level + 1);
-      });
-    }
-    walk(null, 0);
-    if (!flat.length && srcNodes.length){
-      // fallback if root uses explicit id but null parent missing
-      const roots = srcNodes.filter(n => n.parent === null || n.parent === undefined);
-      const visit = (n, level) => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: Array.isArray(n.attachedLinks) ? n.attachedLinks : null
-        });
-        srcNodes.filter(x => x.parent === n.id).forEach(c => visit(c, level + 1));
-      };
-      roots.forEach(r => visit(r, 0));
-    }
-    if (!flat.length) return false;
-    nodes = flat;
-    selectedNodeIndex = -1;
-    document.getElementById('mapTitle').value = payload.mind_map.title || payload.source?.title || 'Mind map';
-    document.getElementById('layoutSelect').value = payload.mind_map.layout === 'top-to-bottom' ? 'ttb' : (payload.mind_map.layout || 'radial');
-    setMode('builder');
-    renderNodeList();
-    updateSelectionState();
-    showToast('Loaded mind map from Study Tool payload');
-    return true;
-  }
-  window.importStudyPayloadToMindMap = adaptFromStudyPayload;
-  document.addEventListener('DOMContentLoaded', function(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) adaptFromStudyPayload(JSON.parse(raw));
-    }catch(e){ console.warn('Study payload import failed', e); }
-  });
-})();
-</script>
-
-</body>
+    </body>
 </opml>`;
 }
 
@@ -2042,81 +1820,7 @@ function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g
 function toO(n,ind){var t=esc(n.name);if(!n.children||!n.children.length){return ind+'<outline text=\"'+t+'\" />';}var kids=n.children.map(function(c){return toO(c,ind+'    ');}).join('\\n');return ind+'<outline text=\"'+t+'\">\\n'+kids+'\\n'+ind+'</outline>';}
 var tree=ext(rootG.__data__);
 var cnt=0;function countNodes(n){cnt++;if(n.children)n.children.forEach(countNodes);}countNodes(tree);
-var opml='<?xml version=\"1.0\" encoding=\"UTF-8\"?>\\n<opml version=\"2.0\">\\n    <head>\\n        <title>'+esc(tree.name)+'</title>\\n    </head>\\n    <body>\\n'+toO(tree,'        ')+'\\n    
-<script>
-(function(){
-  const STORAGE_KEY = 'copilotStudyPayload';
-  function buildChildrenMap(nodes){
-    const byParent = new Map();
-    nodes.forEach(n => {
-      const p = n.parent === undefined ? null : n.parent;
-      if (!byParent.has(p)) byParent.set(p, []);
-      byParent.get(p).push(n);
-    });
-    return byParent;
-  }
-  function adaptFromStudyPayload(payload){
-    if (!payload || !payload.mind_map || !Array.isArray(payload.mind_map.nodes)) return false;
-    const srcNodes = payload.mind_map.nodes.slice();
-    const byParent = buildChildrenMap(srcNodes);
-    const flat = [];
-    function walk(parentId, level){
-      const children = byParent.get(parentId) || [];
-      children.forEach(n => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: (() => {
-            const links = Array.isArray(n.attachedLinks) ? n.attachedLinks.slice() : [];
-            if (n.url) links.unshift({label: n.note || 'Open link', url: n.url});
-            return links.length ? links : null;
-          })()
-        });
-        walk(n.id, level + 1);
-      });
-    }
-    walk(null, 0);
-    if (!flat.length && srcNodes.length){
-      // fallback if root uses explicit id but null parent missing
-      const roots = srcNodes.filter(n => n.parent === null || n.parent === undefined);
-      const visit = (n, level) => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: Array.isArray(n.attachedLinks) ? n.attachedLinks : null
-        });
-        srcNodes.filter(x => x.parent === n.id).forEach(c => visit(c, level + 1));
-      };
-      roots.forEach(r => visit(r, 0));
-    }
-    if (!flat.length) return false;
-    nodes = flat;
-    selectedNodeIndex = -1;
-    document.getElementById('mapTitle').value = payload.mind_map.title || payload.source?.title || 'Mind map';
-    document.getElementById('layoutSelect').value = payload.mind_map.layout === 'top-to-bottom' ? 'ttb' : (payload.mind_map.layout || 'radial');
-    setMode('builder');
-    renderNodeList();
-    updateSelectionState();
-    showToast('Loaded mind map from Study Tool payload');
-    return true;
-  }
-  window.importStudyPayloadToMindMap = adaptFromStudyPayload;
-  document.addEventListener('DOMContentLoaded', function(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) adaptFromStudyPayload(JSON.parse(raw));
-    }catch(e){ console.warn('Study payload import failed', e); }
-  });
-})();
-</script>
-
-</body>\\n</opml>';
+var opml='<?xml version=\"1.0\" encoding=\"UTF-8\"?>\\n<opml version=\"2.0\">\\n    <head>\\n        <title>'+esc(tree.name)+'</title>\\n    </head>\\n    <body>\\n'+toO(tree,'        ')+'\\n    </body>\\n</opml>';
 navigator.clipboard.writeText(opml).then(function(){alert('Mind map OPML copied to clipboard! ('+cnt+' nodes)\\n\\nPaste it into the Mind Map Generator.');}).catch(function(){var ta=document.createElement('textarea');ta.value=opml;ta.style.cssText='position:fixed;top:10px;left:10px;width:90vw;height:80vh;z-index:99999;font-size:12px;';document.body.appendChild(ta);ta.focus();ta.select();alert('Could not copy automatically. The OPML is shown in a text area — please copy it manually (Ctrl+A then Ctrl+C).');});
 })();`;
     const link = document.getElementById('bookmarkletLink');
@@ -3057,80 +2761,6 @@ function update(source){
 window.__nodeIdCounter = 0;
 init();
 <\/script>
-
-<script>
-(function(){
-  const STORAGE_KEY = 'copilotStudyPayload';
-  function buildChildrenMap(nodes){
-    const byParent = new Map();
-    nodes.forEach(n => {
-      const p = n.parent === undefined ? null : n.parent;
-      if (!byParent.has(p)) byParent.set(p, []);
-      byParent.get(p).push(n);
-    });
-    return byParent;
-  }
-  function adaptFromStudyPayload(payload){
-    if (!payload || !payload.mind_map || !Array.isArray(payload.mind_map.nodes)) return false;
-    const srcNodes = payload.mind_map.nodes.slice();
-    const byParent = buildChildrenMap(srcNodes);
-    const flat = [];
-    function walk(parentId, level){
-      const children = byParent.get(parentId) || [];
-      children.forEach(n => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: (() => {
-            const links = Array.isArray(n.attachedLinks) ? n.attachedLinks.slice() : [];
-            if (n.url) links.unshift({label: n.note || 'Open link', url: n.url});
-            return links.length ? links : null;
-          })()
-        });
-        walk(n.id, level + 1);
-      });
-    }
-    walk(null, 0);
-    if (!flat.length && srcNodes.length){
-      // fallback if root uses explicit id but null parent missing
-      const roots = srcNodes.filter(n => n.parent === null || n.parent === undefined);
-      const visit = (n, level) => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: Array.isArray(n.attachedLinks) ? n.attachedLinks : null
-        });
-        srcNodes.filter(x => x.parent === n.id).forEach(c => visit(c, level + 1));
-      };
-      roots.forEach(r => visit(r, 0));
-    }
-    if (!flat.length) return false;
-    nodes = flat;
-    selectedNodeIndex = -1;
-    document.getElementById('mapTitle').value = payload.mind_map.title || payload.source?.title || 'Mind map';
-    document.getElementById('layoutSelect').value = payload.mind_map.layout === 'top-to-bottom' ? 'ttb' : (payload.mind_map.layout || 'radial');
-    setMode('builder');
-    renderNodeList();
-    updateSelectionState();
-    showToast('Loaded mind map from Study Tool payload');
-    return true;
-  }
-  window.importStudyPayloadToMindMap = adaptFromStudyPayload;
-  document.addEventListener('DOMContentLoaded', function(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) adaptFromStudyPayload(JSON.parse(raw));
-    }catch(e){ console.warn('Study payload import failed', e); }
-  });
-})();
-</script>
-
 </body>
 </html>`;
 }
@@ -3194,79 +2824,47 @@ loadFromStorage();
 updateBuilderButtons();
 renderNodes();
 </script>
-
 <script>
 (function(){
-  const STORAGE_KEY = 'copilotStudyPayload';
-  function buildChildrenMap(nodes){
-    const byParent = new Map();
-    nodes.forEach(n => {
-      const p = n.parent === undefined ? null : n.parent;
-      if (!byParent.has(p)) byParent.set(p, []);
-      byParent.get(p).push(n);
-    });
-    return byParent;
-  }
-  function adaptFromStudyPayload(payload){
-    if (!payload || !payload.mind_map || !Array.isArray(payload.mind_map.nodes)) return false;
-    const srcNodes = payload.mind_map.nodes.slice();
-    const byParent = buildChildrenMap(srcNodes);
-    const flat = [];
-    function walk(parentId, level){
-      const children = byParent.get(parentId) || [];
-      children.forEach(n => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: (() => {
-            const links = Array.isArray(n.attachedLinks) ? n.attachedLinks.slice() : [];
-            if (n.url) links.unshift({label: n.note || 'Open link', url: n.url});
-            return links.length ? links : null;
-          })()
-        });
-        walk(n.id, level + 1);
-      });
+  const KEY='copilotStudyPayload';
+  function mapPayloadToBuilderNodes(payload){
+    const mm=(payload||{}).mind_map||{};
+    const rawNodes=Array.isArray(mm.nodes)?mm.nodes:[];
+    if(!rawNodes.length) return [];
+    const byParent=new Map();
+    rawNodes.forEach(n=>{const p=n.parent==null?'__root__':n.parent; if(!byParent.has(p)) byParent.set(p,[]); byParent.get(p).push(n);});
+    const out=[];
+    function pushNode(n, level){
+      const node={text:(n.label||n.text||'Untitled').trim(), level, isImage:false};
+      if(n.note) node.note=n.note;
+      if(n.image) node.attachedImage=n.image;
+      if(Array.isArray(n.attachedLinks)&&n.attachedLinks.length) node.attachedLinks=n.attachedLinks;
+      if(Array.isArray(n.attachedDocs)&&n.attachedDocs.length) node.attachedDocs=n.attachedDocs;
+      if(n.url){node.attachedLinks=(node.attachedLinks||[]).concat([{label:n.url_label||'Link',url:n.url}]);}
+      out.push(node);
+      const kids=byParent.get(n.id)||[]; kids.forEach(k=>pushNode(k, level+1));
     }
-    walk(null, 0);
-    if (!flat.length && srcNodes.length){
-      // fallback if root uses explicit id but null parent missing
-      const roots = srcNodes.filter(n => n.parent === null || n.parent === undefined);
-      const visit = (n, level) => {
-        flat.push({
-          text: n.label || 'Untitled node',
-          level,
-          isImage: false,
-          attachedImage: n.attachedImage || null,
-          attachedDocs: Array.isArray(n.attachedDocs) ? n.attachedDocs : null,
-          attachedLinks: Array.isArray(n.attachedLinks) ? n.attachedLinks : null
-        });
-        srcNodes.filter(x => x.parent === n.id).forEach(c => visit(c, level + 1));
-      };
-      roots.forEach(r => visit(r, 0));
-    }
-    if (!flat.length) return false;
-    nodes = flat;
-    selectedNodeIndex = -1;
-    document.getElementById('mapTitle').value = payload.mind_map.title || payload.source?.title || 'Mind map';
-    document.getElementById('layoutSelect').value = payload.mind_map.layout === 'top-to-bottom' ? 'ttb' : (payload.mind_map.layout || 'radial');
-    setMode('builder');
-    renderNodeList();
-    updateSelectionState();
-    showToast('Loaded mind map from Study Tool payload');
-    return true;
+    const roots=byParent.get('__root__') || rawNodes.filter(n=>n.parent==null);
+    roots.forEach(r=>pushNode(r,0));
+    return out;
   }
-  window.importStudyPayloadToMindMap = adaptFromStudyPayload;
-  document.addEventListener('DOMContentLoaded', function(){
+  function importCopilotPayload(){
     try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) adaptFromStudyPayload(JSON.parse(raw));
-    }catch(e){ console.warn('Study payload import failed', e); }
-  });
+      const raw=localStorage.getItem(KEY); if(!raw) return;
+      const payload=JSON.parse(raw);
+      const mapped=mapPayloadToBuilderNodes(payload);
+      if(!mapped.length) return;
+      nodes=mapped;
+      const title=(payload.mind_map&&payload.mind_map.title)||(payload.source&&payload.source.title)||'Imported Mind Map';
+      const titleEl=document.getElementById('mapTitle'); if(titleEl) titleEl.value=title;
+      const layoutEl=document.getElementById('layoutSelect'); if(layoutEl && payload.mind_map && payload.mind_map.layout) layoutEl.value=payload.mind_map.layout;
+      if(typeof setMode==='function') setMode('builder');
+      if(typeof updateBuilderButtons==='function') updateBuilderButtons();
+      if(typeof renderNodes==='function') renderNodes();
+      if(typeof saveToStorage==='function') saveToStorage();
+      if(typeof showProcessingIndicator==='function') showProcessingIndicator('processingBuilder','Study Tool mind map loaded.');
+    }catch(e){console.error('Copilot mind map import failed',e);}
+  }
+  window.addEventListener('load', function(){ setTimeout(importCopilotPayload, 50); });
 })();
-</script>
-
-</body>
-</html>
+</script></body></html>

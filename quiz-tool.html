@@ -1899,40 +1899,6 @@ function showResults(){
 function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
 restart();
 <\/script>
-
-<script>
-(function(){
-  const STORAGE_KEY = 'copilotStudyPayload';
-  function adaptFromStudyPayload(payload){
-    if (!payload || !payload.quiz || !Array.isArray(payload.quiz.questions)) return false;
-    questions = payload.quiz.questions.map(q => ({
-      question: q.question || '',
-      options: Array.isArray(q.options) ? q.options.filter(x => x !== undefined && x !== null).map(x => String(x)) : ['', '', '', ''],
-      correctIndex: Number.isInteger(q.correct_index) ? q.correct_index : (Number.isInteger(q.correctIndex) ? q.correctIndex : 0),
-      explanation: q.explanation || ''
-    }));
-    document.getElementById('quizTitle').value = payload.quiz.title || payload.source?.title || 'Untitled Quiz';
-    const authors = Array.isArray(payload.source?.authors) ? payload.source.authors.join(', ') : '';
-    document.getElementById('quizAuthor').value = authors;
-    document.getElementById('quizDescription').value = payload.summary?.plain || payload.quiz.description || '';
-    updateBadge();
-    renderEditor();
-    resetQuiz();
-    updateExportState();
-    switchTab('quiz');
-    showToast('Loaded quiz from Study Tool payload');
-    return true;
-  }
-  window.importStudyPayloadToQuiz = adaptFromStudyPayload;
-  document.addEventListener('DOMContentLoaded', function(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) adaptFromStudyPayload(JSON.parse(raw));
-    }catch(e){ console.warn('Study payload import failed', e); }
-  });
-})();
-</script>
-
 </body>
 </html>`;
 }
@@ -1984,39 +1950,27 @@ document.getElementById('importData').addEventListener('paste', () => {
   }
 });
 </script>
-
 <script>
 (function(){
-  const STORAGE_KEY = 'copilotStudyPayload';
-  function adaptFromStudyPayload(payload){
-    if (!payload || !payload.quiz || !Array.isArray(payload.quiz.questions)) return false;
-    questions = payload.quiz.questions.map(q => ({
-      question: q.question || '',
-      options: Array.isArray(q.options) ? q.options.filter(x => x !== undefined && x !== null).map(x => String(x)) : ['', '', '', ''],
-      correctIndex: Number.isInteger(q.correct_index) ? q.correct_index : (Number.isInteger(q.correctIndex) ? q.correctIndex : 0),
-      explanation: q.explanation || ''
-    }));
-    document.getElementById('quizTitle').value = payload.quiz.title || payload.source?.title || 'Untitled Quiz';
-    const authors = Array.isArray(payload.source?.authors) ? payload.source.authors.join(', ') : '';
-    document.getElementById('quizAuthor').value = authors;
-    document.getElementById('quizDescription').value = payload.summary?.plain || payload.quiz.description || '';
-    updateBadge();
-    renderEditor();
-    resetQuiz();
-    updateExportState();
-    switchTab('quiz');
-    showToast('Loaded quiz from Study Tool payload');
-    return true;
+  const KEY='copilotStudyPayload';
+  function mapPayloadToQuestions(payload){
+    const qs=((payload||{}).quiz||{}).questions||[];
+    return qs.map(q=>({question:q.question||'',options:Array.isArray(q.options)?q.options.slice():['','','',''],correctIndex:Number.isInteger(q.correct_index)?q.correct_index:0,explanation:q.explanation||''}));
   }
-  window.importStudyPayloadToQuiz = adaptFromStudyPayload;
-  document.addEventListener('DOMContentLoaded', function(){
+  function importCopilotPayload(){
     try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) adaptFromStudyPayload(JSON.parse(raw));
-    }catch(e){ console.warn('Study payload import failed', e); }
-  });
+      const raw=localStorage.getItem(KEY); if(!raw) return;
+      const payload=JSON.parse(raw);
+      const mapped=mapPayloadToQuestions(payload);
+      if(!mapped.length) return;
+      questions=mapped;
+      const title=(payload.quiz&&payload.quiz.title)||(payload.source&&payload.source.title?payload.source.title+' quiz':'Imported Quiz');
+      const desc=(payload.quiz&&payload.quiz.description)||(payload.summary&&payload.summary.plain)||'';
+      const titleEl=document.getElementById('quizTitle'); if(titleEl) titleEl.value=title;
+      const descEl=document.getElementById('quizDescription'); if(descEl) descEl.value=desc;
+      updateBadge(); renderEditor(); updateExportState(); resetQuiz(); showToast('Loaded quiz from Study Tool payload');
+    }catch(e){console.error('Copilot payload import failed',e);}
+  }
+  window.addEventListener('load', function(){ setTimeout(importCopilotPayload, 50); });
 })();
-</script>
-
-</body>
-</html>
+</script></body></html>

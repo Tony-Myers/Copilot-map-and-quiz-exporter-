@@ -4,65 +4,67 @@
     "origin": "copilot",
     "title": "Example Article",
     "authors": [
-      "A. Author",
-      "B. Author"
+      "A. Author"
     ],
-    "citation": "Author, A. (2026). Example Article. Journal of Examples.",
+    "citation": "Author, A. (2026). Example.",
     "year": 2026,
     "source_files": [
       "example.pdf"
     ]
   },
   "summary": {
-    "plain": "Example summary.",
+    "plain": "Summary text.",
     "key_points": [
       "Point 1",
       "Point 2"
     ]
   },
   "quiz": {
-    "title": "Example Article quiz",
-    "description": "Quiz from article",
+    "title": "Example quiz",
+    "description": "Imported from Copilot",
     "questions": [
       {
-        "question": "What is one key point?",
+        "question": "What is one key idea?",
         "options": [
-          "Point 1",
-          "Point X",
-          "Point Y",
-          "Point Z"
+          "A",
+          "B",
+          "C",
+          "D"
         ],
-        "correct_index": 0,
-        "explanation": "Because Point 1 is listed.",
-        "source_ref": "Summary"
+        "correct_index": 1,
+        "explanation": "Because B is correct.",
+        "source_ref": "Intro"
       }
     ]
   },
   "mind_map": {
-    "title": "Example Article",
+    "title": "Example mind map",
     "layout": "radial",
     "nodes": [
       {
         "id": "root",
         "label": "Example Article",
         "parent": null,
-        "source_ref": "Title",
-        "note": "",
-        "url": "",
-        "attachedLinks": [],
-        "attachedDocs": [],
-        "attachedImage": null
+        "source_ref": "Title"
       },
       {
         "id": "n1",
-        "label": "Point 1",
+        "label": "Main concept",
         "parent": "root",
-        "source_ref": "Summary",
-        "note": "",
-        "url": "",
-        "attachedLinks": [],
-        "attachedDocs": [],
-        "attachedImage": null
+        "source_ref": "Intro",
+        "note": "Optional note",
+        "attachedLinks": [
+          {
+            "label": "Paper DOI",
+            "url": "https://example.org"
+          }
+        ]
+      },
+      {
+        "id": "n2",
+        "label": "Method",
+        "parent": "root",
+        "source_ref": "Methods"
       }
     ]
   }
