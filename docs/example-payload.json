@@ -1,0 +1,84 @@
+{
+  "version": "1.0",
+  "source": {
+    "origin": "copilot",
+    "title": "Example Article on Bayesian Thinking",
+    "authors": ["A. Researcher", "B. Scholar"],
+    "citation": "Researcher, A., & Scholar, B. (2026). Example Article on Bayesian Thinking. Journal of Examples, 12(3), 1-18.",
+    "year": 2026,
+    "source_files": ["example-article.pdf"]
+  },
+  "summary": {
+    "plain": "This article argues that Bayesian reasoning provides a coherent framework for scientific inference when prior assumptions are made explicit and updated transparently in light of data.",
+    "key_points": [
+      "Bayesian inference combines prior information with observed data.",
+      "Model comparison should consider predictive performance.",
+      "Transparent assumptions are central to scientific interpretation."
+    ]
+  },
+  "quiz": {
+    "title": "Example Article on Bayesian Thinking quiz",
+    "description": "Quiz generated from article notes.",
+    "questions": [
+      {
+        "question": "What is combined with observed data in Bayesian inference?",
+        "options": [
+          "Only p-values",
+          "Prior information",
+          "Sampling error alone",
+          "Null hypotheses only"
+        ],
+        "correct_index": 1,
+        "explanation": "Bayesian inference combines prior information with observed data.",
+        "source_ref": "Introduction"
+      },
+      {
+        "question": "What does the article recommend for model comparison?",
+        "options": [
+          "Predictive performance",
+          "Only significance thresholds",
+          "Only raw correlations",
+          "Ignoring assumptions"
+        ],
+        "correct_index": 0,
+        "explanation": "The article highlights predictive performance in model comparison.",
+        "source_ref": "Discussion"
+      }
+    ]
+  },
+  "mind_map": {
+    "title": "Example Article on Bayesian Thinking",
+    "nodes": [
+      {
+        "id": "root",
+        "label": "Example Article on Bayesian Thinking",
+        "parent": null,
+        "source_ref": "Title"
+      },
+      {
+        "id": "node_1",
+        "label": "Bayesian inference",
+        "parent": "root",
+        "source_ref": "Introduction"
+      },
+      {
+        "id": "node_2",
+        "label": "Prior information",
+        "parent": "node_1",
+        "source_ref": "Introduction"
+      },
+      {
+        "id": "node_3",
+        "label": "Observed data",
+        "parent": "node_1",
+        "source_ref": "Methods"
+      },
+      {
+        "id": "node_4",
+        "label": "Predictive performance",
+        "parent": "root",
+        "source_ref": "Discussion"
+      }
+    ]
+  }
+}
