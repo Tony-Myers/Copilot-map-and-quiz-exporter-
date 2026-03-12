@@ -1,31 +1,34 @@
-# Copilot Study Tool
+# Study Quiz & Mind Map Tool
 
-A lightweight GitHub Pages app for working with structured study payloads generated from Microsoft Copilot or other LLM workflows.
+A combined GitHub Pages app for working with structured study payloads generated from Microsoft Copilot or similar tools.
 
-## Features
+## What changed
 
-- Paste or upload a study payload JSON file
-- Load a payload from a backend session link
-- View article metadata and summary
-- Edit quiz questions
-- Edit mind map nodes
-- Export:
-  - full payload JSON
-  - quiz JSON
-  - mind map JSON
-  - OPML
+This version extends the earlier MVP by:
+- restoring useful quiz exports: Standalone HTML, Moodle XML, Aiken, GIFT, CSV, worksheet
+- restoring richer mind-map support: layout setting, attached links, attached documents, attached image field
+- adding Standalone HTML Mind Map export
+- keeping full JSON exports in an Advanced section
 
-## Expected payload format
+## Files to replace in the combined app
 
-See `docs/example-payload.json`.
+- `index.html`
+- `styles.css`
+- `app.js`
+- `js/payload.js`
+- `js/session.js`
+- `js/quiz.js`
+- `js/mindmap.js`
+- `js/export.js`
 
 ## Session backend
-
-The app supports query strings like:
-
-`?session=abc123`
 
 Edit `js/session.js` and set:
 
 ```js
 const SESSION_API_BASE = "https://YOUR-BACKEND-URL.example.com";
+```
+
+## Payload format
+
+See `docs/example-payload.json`.

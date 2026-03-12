@@ -3,32 +3,29 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Copilot Study Tool</title>
+  <title>Study Quiz & Mind Map Tool</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <header class="site-header">
     <div class="wrap">
-      <h1>Copilot Study Tool</h1>
-      <p class="subtitle">Quiz and mind map workspace for Copilot-generated study payloads</p>
+      <h1>Study Quiz & Mind Map Tool</h1>
+      <p class="subtitle">Combined exporter for Copilot-generated study payloads</p>
     </div>
   </header>
 
   <main class="wrap">
     <section class="panel">
       <h2>Load study payload</h2>
-
       <div class="load-grid">
         <div>
           <label for="payloadInput" class="label">Paste JSON payload</label>
           <textarea id="payloadInput" placeholder='Paste a study payload JSON object here'></textarea>
-
           <div class="button-row">
             <button id="loadPayloadBtn" class="primary">Load pasted JSON</button>
             <button id="clearPayloadBtn">Clear</button>
           </div>
         </div>
-
         <div>
           <label for="fileInput" class="label">Upload JSON file</label>
           <input type="file" id="fileInput" accept=".json,application/json" />
@@ -51,59 +48,40 @@
           </div>
         </div>
       </div>
-
       <div id="statusMessage" class="status"></div>
     </section>
 
     <section class="panel" id="sourcePanel">
       <h2>Source</h2>
       <div class="meta-grid">
-        <div>
-          <div class="meta-label">Title</div>
-          <div id="sourceTitle" class="meta-value">No payload loaded</div>
-        </div>
-        <div>
-          <div class="meta-label">Authors</div>
-          <div id="sourceAuthors" class="meta-value">—</div>
-        </div>
-        <div>
-          <div class="meta-label">Year</div>
-          <div id="sourceYear" class="meta-value">—</div>
-        </div>
-        <div>
-          <div class="meta-label">Origin</div>
-          <div id="sourceOrigin" class="meta-value">—</div>
-        </div>
+        <div><div class="meta-label">Title</div><div id="sourceTitle" class="meta-value">No payload loaded</div></div>
+        <div><div class="meta-label">Authors</div><div id="sourceAuthors" class="meta-value">—</div></div>
+        <div><div class="meta-label">Year</div><div id="sourceYear" class="meta-value">—</div></div>
+        <div><div class="meta-label">Origin</div><div id="sourceOrigin" class="meta-value">—</div></div>
       </div>
-
-      <div class="meta-block">
-        <div class="meta-label">Citation</div>
-        <div id="sourceCitation" class="meta-value">—</div>
-      </div>
-
-      <div class="meta-block">
-        <div class="meta-label">Summary</div>
-        <div id="sourceSummary" class="meta-value">—</div>
-      </div>
-
-      <div class="meta-block">
-        <div class="meta-label">Key points</div>
-        <ul id="summaryKeyPoints" class="key-points"></ul>
-      </div>
+      <div class="meta-block"><div class="meta-label">Citation</div><div id="sourceCitation" class="meta-value">—</div></div>
+      <div class="meta-block"><div class="meta-label">Summary</div><div id="sourceSummary" class="meta-value">—</div></div>
+      <div class="meta-block"><div class="meta-label">Key points</div><ul id="summaryKeyPoints" class="key-points"></ul></div>
     </section>
 
     <nav class="tabs">
       <button class="tab-button active" data-tab="quizTab">Quiz</button>
       <button class="tab-button" data-tab="mindMapTab">Mind Map</button>
-      <button class="tab-button" data-tab="exportTab">Export</button>
+      <button class="tab-button" data-tab="exportTab">Download Study Materials</button>
     </nav>
 
     <section id="quizTab" class="tab-panel active panel">
       <div class="panel-header">
         <h2>Quiz</h2>
-        <div class="button-row">
-          <button id="addQuestionBtn">Add question</button>
-        </div>
+        <div class="button-row"><button id="addQuestionBtn">Add question</button></div>
+      </div>
+      <div class="meta-block">
+        <label class="label" for="quizTitleInput">Quiz title</label>
+        <input type="text" id="quizTitleInput" />
+      </div>
+      <div class="meta-block">
+        <label class="label" for="quizDescriptionInput">Quiz description</label>
+        <textarea id="quizDescriptionInput" rows="3"></textarea>
       </div>
       <div id="quizContainer"></div>
     </section>
@@ -111,40 +89,49 @@
     <section id="mindMapTab" class="tab-panel panel">
       <div class="panel-header">
         <h2>Mind Map</h2>
-        <div class="button-row">
-          <button id="addRootChildBtn">Add child to root</button>
+        <div class="button-row"><button id="addRootChildBtn">Add child to root</button></div>
+      </div>
+      <div class="meta-grid compact-grid">
+        <div>
+          <label class="label" for="mindMapTitleInput">Mind map title</label>
+          <input type="text" id="mindMapTitleInput" />
+        </div>
+        <div>
+          <label class="label" for="mindMapLayoutInput">Layout</label>
+          <select id="mindMapLayoutInput">
+            <option value="top-to-bottom">Top-to-bottom</option>
+            <option value="left-to-right">Left-to-right</option>
+            <option value="radial">Radial</option>
+          </select>
         </div>
       </div>
       <div id="mindMapContainer"></div>
     </section>
 
     <section id="exportTab" class="tab-panel panel">
-      <h2>Export</h2>
+      <h2>Download Study Materials</h2>
 
+      <h3>Quiz exports</h3>
       <div class="export-grid">
-        <div class="export-card">
-          <h3>Payload</h3>
-          <p>Export the current full study payload as JSON.</p>
-          <button id="exportPayloadBtn" class="primary">Export payload JSON</button>
-        </div>
+        <div class="export-card"><h4>Standalone HTML Quiz</h4><p>Interactive self-contained quiz file.</p><button id="exportStandaloneQuizBtn" class="primary">Export HTML quiz</button></div>
+        <div class="export-card"><h4>Moodle XML</h4><p>Import to a Moodle question bank.</p><button id="exportMoodleXmlBtn">Export Moodle XML</button></div>
+        <div class="export-card"><h4>Aiken</h4><p>Simple LMS-friendly text format.</p><button id="exportAikenBtn">Export Aiken</button></div>
+        <div class="export-card"><h4>GIFT</h4><p>Moodle GIFT bulk import format.</p><button id="exportGiftBtn">Export GIFT</button></div>
+        <div class="export-card"><h4>CSV</h4><p>Spreadsheet-compatible quiz export.</p><button id="exportCsvBtn">Export CSV</button></div>
+        <div class="export-card"><h4>Worksheet</h4><p>Printable question sheet with answer key.</p><button id="exportWorksheetBtn">Export worksheet</button></div>
+      </div>
 
-        <div class="export-card">
-          <h3>Quiz</h3>
-          <p>Export quiz section only as JSON.</p>
-          <button id="exportQuizBtn">Export quiz JSON</button>
-        </div>
+      <h3>Mind map exports</h3>
+      <div class="export-grid">
+        <div class="export-card"><h4>Standalone HTML Mind Map</h4><p>Interactive map with layout switcher and attachments.</p><button id="exportStandaloneMindMapBtn" class="primary">Export HTML mind map</button></div>
+        <div class="export-card"><h4>OPML</h4><p>Import into compatible mind-mapping tools.</p><button id="exportOpmlBtn">Export OPML</button></div>
+      </div>
 
-        <div class="export-card">
-          <h3>Mind map</h3>
-          <p>Export mind map section only as JSON.</p>
-          <button id="exportMindMapBtn">Export mind map JSON</button>
-        </div>
-
-        <div class="export-card">
-          <h3>OPML</h3>
-          <p>Export the current mind map as OPML.</p>
-          <button id="exportOpmlBtn">Export OPML</button>
-        </div>
+      <h3>Advanced</h3>
+      <div class="export-grid">
+        <div class="export-card"><h4>Full Study JSON</h4><p>Complete structured payload.</p><button id="exportPayloadBtn">Export full JSON</button></div>
+        <div class="export-card"><h4>Quiz JSON</h4><p>Quiz section only.</p><button id="exportQuizBtn">Export quiz JSON</button></div>
+        <div class="export-card"><h4>Mind map JSON</h4><p>Mind map section only.</p><button id="exportMindMapBtn">Export mind map JSON</button></div>
       </div>
 
       <div class="meta-block">
