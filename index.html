@@ -1,1 +1,106 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Study Tool Launcher</title><link rel="stylesheet" href="styles.css"></head><body><header class="site-header"><div class="wrap"><h1>Study Tool Launcher</h1><p class="subtitle">Paste a Copilot JSON payload, then open the quiz or mind map tool.</p></div></header><main class="wrap"><section class="panel"><h2>Load study payload</h2><label class="label" for="payloadInput">Paste JSON payload</label><textarea id="payloadInput" placeholder='Paste the full JSON object here'></textarea><div class="button-row"><button id="saveBtn" class="primary">Save payload</button><button id="clearBtn">Clear</button></div><div id="statusMessage" class="status"></div></section><section class="panel"><h2>Source preview</h2><div class="meta-grid"><div><div class="meta-label">Title</div><div id="sourceTitle" class="meta-value">No payload saved</div></div><div><div class="meta-label">Authors</div><div id="sourceAuthors" class="meta-value">—</div></div><div><div class="meta-label">Year</div><div id="sourceYear" class="meta-value">—</div></div><div><div class="meta-label">Origin</div><div id="sourceOrigin" class="meta-value">—</div></div></div><div class="meta-block"><div class="meta-label">Citation</div><div id="sourceCitation" class="meta-value">—</div></div><div class="meta-block"><div class="meta-label">Summary</div><div id="sourceSummary" class="meta-value">—</div></div></section><section class="panel"><h2>Open a tool</h2><div class="button-row"><a class="buttonlike primary" href="quiz-tool.html">Open Quiz Tool</a><a class="buttonlike" href="mindmap-tool.html">Open Mind Map Tool</a></div><p class="small-note">The payload is stored in your browser for these two tools to read.</p></section></main><script src="app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Copilot Map and Quiz Exporter</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>Copilot Map and Quiz Exporter</h1>
+      <p class="subtitle">Turn Copilot study outputs into interactive quizzes and mind maps</p>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="panel">
+      <h2>How to use this tool</h2>
+      <div class="help-box">
+        <strong>Standard workflow</strong>
+        <ol>
+          <li>Generate a quiz and/or mind map in your Copilot agent.</li>
+          <li>Copy the full Copilot response.</li>
+          <li>Paste it into the box below.</li>
+          <li>Click <strong>Save payload</strong> if it does not auto-load.</li>
+          <li>Open the Quiz Tool or Mind Map Tool.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="panel" id="pasteHelpPanel" style="display:none;">
+      <div class="help-box">
+        <strong>Quick steps</strong>
+        <ol>
+          <li>Copy the full Copilot response.</li>
+          <li>Paste it into the box below.</li>
+          <li>The tool will try to extract the JSON automatically.</li>
+          <li>Open the Quiz Tool or Mind Map Tool.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Load Copilot study materials</h2>
+
+      <label for="payloadInput" class="label">Paste Copilot response</label>
+      <textarea
+        id="payloadInput"
+        placeholder="Paste the full Copilot response here. The tool will try to extract the JSON automatically."
+      ></textarea>
+
+      <div class="button-row">
+        <button id="saveBtn" class="primary">Save payload</button>
+        <button id="clearBtn">Clear saved payload</button>
+      </div>
+
+      <div id="statusMessage" class="status"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Current saved study material</h2>
+
+      <div class="meta-grid">
+        <div>
+          <div class="meta-label">Title</div>
+          <div id="sourceTitle" class="meta-value">No payload saved</div>
+        </div>
+        <div>
+          <div class="meta-label">Authors</div>
+          <div id="sourceAuthors" class="meta-value">—</div>
+        </div>
+        <div>
+          <div class="meta-label">Year</div>
+          <div id="sourceYear" class="meta-value">—</div>
+        </div>
+        <div>
+          <div class="meta-label">Origin</div>
+          <div id="sourceOrigin" class="meta-value">—</div>
+        </div>
+      </div>
+
+      <div class="meta-block">
+        <div class="meta-label">Citation</div>
+        <div id="sourceCitation" class="meta-value">—</div>
+      </div>
+
+      <div class="meta-block">
+        <div class="meta-label">Summary</div>
+        <div id="sourceSummary" class="meta-value">—</div>
+      </div>
+
+      <p class="small-note">
+        The currently saved payload will be used when you open the Quiz Tool or Mind Map Tool.
+      </p>
+
+      <div class="button-row">
+        <a href="quiz-tool.html" class="buttonlike primary">Open Quiz Tool</a>
+        <a href="mindmap-tool.html" class="buttonlike">Open Mind Map Tool</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
