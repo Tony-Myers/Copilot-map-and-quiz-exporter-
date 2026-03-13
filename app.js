@@ -1,57 +1,73 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const KEY = 'copilotStudyPayload';
+document.addEventListener("DOMContentLoaded", function () {
+  var KEY = "copilotStudyPayload";
 
-  const payloadInput = document.getElementById('payloadInput');
-  const saveBtn = document.getElementById('saveBtn');
-  const clearBtn = document.getElementById('clearBtn');
-  const pasteClipboardBtn = document.getElementById('pasteClipboardBtn');
-  const statusMessage = document.getElementById('statusMessage');
-  const pasteHelpPanel = document.getElementById('pasteHelpPanel');
+  var payloadInput = document.getElementById("payloadInput");
+  var saveBtn = document.getElementById("saveBtn");
+  var clearBtn = document.getElementById("clearBtn");
+  var pasteClipboardBtn = document.getElementById("pasteClipboardBtn");
+  var statusMessage = document.getElementById("statusMessage");
+  var pasteHelpPanel = document.getElementById("pasteHelpPanel");
 
-  const sourceTitle = document.getElementById('sourceTitle');
-  const sourceAuthors = document.getElementById('sourceAuthors');
-  const sourceYear = document.getElementById('sourceYear');
-  const sourceOrigin = document.getElementById('sourceOrigin');
-  const sourceCitation = document.getElementById('sourceCitation');
-  const sourceSummary = document.getElementById('sourceSummary');
+  var sourceTitle = document.getElementById("sourceTitle");
+  var sourceAuthors = document.getElementById("sourceAuthors");
+  var sourceYear = document.getElementById("sourceYear");
+  var sourceOrigin = document.getElementById("sourceOrigin");
+  var sourceCitation = document.getElementById("sourceCitation");
+  var sourceSummary = document.getElementById("sourceSummary");
 
-  function showStatus(message, type = 'success') {
+  function showStatus(message, type) {
     if (!statusMessage) return;
     statusMessage.textContent = message;
-    statusMessage.className = `status show ${type}`;
+    statusMessage.className = "status show " + (type || "success");
   }
 
   function render(payload) {
-    const source = payload?.source || {};
+    payload = payload || {};
+    var source = payload.source || {};
 
-    sourceTitle.textContent = source.title || 'No study material loaded';
-    sourceAuthors.textContent =
-      Array.isArray(source.authors) && source.authors.length
-        ? source.authors.join(', ')
-        : '—';
-    sourceYear.textContent = source.year || '—';
-    sourceOrigin.textContent = source.origin || '—';
-    sourceCitation.textContent = source.citation || '—';
-    sourceSummary.textContent = payload?.summary?.plain || '—';
+    if (sourceTitle) sourceTitle.textContent = source.title || "No study material loaded";
+    if (sourceAuthors) {
+      sourceAuthors.textContent =
+        Array.isArray(source.authors) && source.authors.length
+          ? source.authors.join(", ")
+          : "—";
+    }
+    if (sourceYear) sourceYear.textContent = source.year || "—";
+    if (sourceOrigin) sourceOrigin.textContent = source.origin || "—";
+    if (sourceCitation) sourceCitation.textContent = source.citation || "—";
+    if (sourceSummary) sourceSummary.textContent = (payload.summary && payload.summary.plain) || "—";
+  }
+
+  function cleanText(text) {
+    var cleaned = (text || "").trim();
+
+    cleaned = cleaned.replace(/^```(?:json)?/i, "");
+    cleaned = cleaned.replace(/```$/i, "");
+    cleaned = cleaned.trim();
+
+    cleaned = cleaned.replace(/\{\{/g, "{").replace(/\}\}/g, "}");
+    cleaned = cleaned.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
+
+    return cleaned;
   }
 
   function extractJsonObject(text) {
-    const start = text.indexOf('{');
+    var start = text.indexOf("{");
     if (start === -1) return null;
 
-    let depth = 0;
-    let inString = false;
-    let escaped = false;
+    var depth = 0;
+    var inString = false;
+    var escaped = false;
 
-    for (let i = start; i < text.length; i++) {
-      const ch = text[i];
+    for (var i = start; i < text.length; i++) {
+      var ch = text[i];
 
       if (escaped) {
         escaped = false;
         continue;
       }
 
-      if (ch === '\\') {
+      if (ch === "\\") {
         escaped = true;
         continue;
       }
@@ -62,8 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (!inString) {
-        if (ch === '{') depth++;
-        if (ch === '}') depth--;
+        if (ch === "{") depth++;
+        if (ch === "}") depth--;
 
         if (depth === 0) {
           return text.slice(start, i + 1);
@@ -74,223 +90,219 @@ document.addEventListener('DOMContentLoaded', () => {
     return null;
   }
 
-  function cleanPotentialJson(text) {
-    let cleaned = text.trim();
-
-    cleaned = cleaned.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();
-    cleaned = cleaned.replace(/\{\{/g, '{').replace(/\}\}/g, '}');
-    cleaned = cleaned.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
-
-    return cleaned;
-  }
-
   function normalisePayload(payload) {
-    if (!payload || typeof payload !== 'object') {
-      throw new Error('Payload is not an object.');
+    if (!payload || typeof payload !== "object") {
+      throw new Error("Payload is not a JSON object.");
     }
 
-    if (payload.type === 'quiz' && payload.quiz) {
+    // Quiz-only
+    if (payload.type === "quiz" && payload.quiz) {
       return {
-        version: '1.0',
+        version: "1.0",
         source: {
-          origin: payload.source?.origin || 'copilot',
-          title: payload.source?.title || '',
-          authors: Array.isArray(payload.source?.authors) ? payload.source.authors : [],
-          citation: payload.source?.citation || '',
-          year: payload.source?.year || '',
-          source_files: Array.isArray(payload.source?.source_files) ? payload.source.source_files : []
+          origin: (payload.source && payload.source.origin) || "copilot",
+          title: (payload.source && payload.source.title) || "",
+          authors: (payload.source && Array.isArray(payload.source.authors)) ? payload.source.authors : [],
+          citation: (payload.source && payload.source.citation) || "",
+          year: (payload.source && payload.source.year) || "",
+          source_files: (payload.source && Array.isArray(payload.source.source_files)) ? payload.source.source_files : []
         },
         summary: {
-          plain: payload.summary?.plain || '',
-          key_points: Array.isArray(payload.summary?.key_points) ? payload.summary.key_points : []
+          plain: (payload.summary && payload.summary.plain) || "",
+          key_points: (payload.summary && Array.isArray(payload.summary.key_points)) ? payload.summary.key_points : []
         },
         quiz: {
-          title: payload.quiz?.title || '',
-          description: payload.quiz?.description || '',
-          questions: Array.isArray(payload.quiz?.questions) ? payload.quiz.questions : []
+          title: (payload.quiz && payload.quiz.title) || "",
+          description: (payload.quiz && payload.quiz.description) || "",
+          questions: (payload.quiz && Array.isArray(payload.quiz.questions)) ? payload.quiz.questions : []
         },
         mind_map: {
-          title: '',
-          layout: 'radial',
+          title: "",
+          layout: "radial",
           nodes: []
         }
       };
     }
 
-    if (payload.type === 'mind_map' && payload.mind_map) {
+    // Mind-map-only
+    if (payload.type === "mind_map" && payload.mind_map) {
       return {
-        version: '1.0',
+        version: "1.0",
         source: {
-          origin: payload.source?.origin || 'copilot',
-          title: payload.source?.title || '',
-          authors: Array.isArray(payload.source?.authors) ? payload.source.authors : [],
-          citation: payload.source?.citation || '',
-          year: payload.source?.year || '',
-          source_files: Array.isArray(payload.source?.source_files) ? payload.source.source_files : []
+          origin: (payload.source && payload.source.origin) || "copilot",
+          title: (payload.source && payload.source.title) || "",
+          authors: (payload.source && Array.isArray(payload.source.authors)) ? payload.source.authors : [],
+          citation: (payload.source && payload.source.citation) || "",
+          year: (payload.source && payload.source.year) || "",
+          source_files: (payload.source && Array.isArray(payload.source.source_files)) ? payload.source.source_files : []
         },
         summary: {
-          plain: payload.summary?.plain || '',
-          key_points: Array.isArray(payload.summary?.key_points) ? payload.summary.key_points : []
+          plain: (payload.summary && payload.summary.plain) || "",
+          key_points: (payload.summary && Array.isArray(payload.summary.key_points)) ? payload.summary.key_points : []
         },
         quiz: {
-          title: '',
-          description: '',
+          title: "",
+          description: "",
           questions: []
         },
         mind_map: {
-          title: payload.mind_map?.title || payload.source?.title || 'Mind map',
-          layout: payload.mind_map?.layout || 'radial',
-          nodes: Array.isArray(payload.mind_map?.nodes) ? payload.mind_map.nodes : []
+          title: (payload.mind_map && payload.mind_map.title) || ((payload.source && payload.source.title) || "Mind map"),
+          layout: (payload.mind_map && payload.mind_map.layout) || "radial",
+          nodes: (payload.mind_map && Array.isArray(payload.mind_map.nodes)) ? payload.mind_map.nodes : []
         }
       };
     }
 
+    // Combined
     if (payload.source || payload.quiz || payload.mind_map) {
       return {
-        version: payload.version || '1.0',
+        version: payload.version || "1.0",
         source: {
-          origin: payload.source?.origin || 'copilot',
-          title: payload.source?.title || '',
-          authors: Array.isArray(payload.source?.authors) ? payload.source.authors : [],
-          citation: payload.source?.citation || '',
-          year: payload.source?.year || '',
-          source_files: Array.isArray(payload.source?.source_files) ? payload.source.source_files : []
+          origin: (payload.source && payload.source.origin) || "copilot",
+          title: (payload.source && payload.source.title) || "",
+          authors: (payload.source && Array.isArray(payload.source.authors)) ? payload.source.authors : [],
+          citation: (payload.source && payload.source.citation) || "",
+          year: (payload.source && payload.source.year) || "",
+          source_files: (payload.source && Array.isArray(payload.source.source_files)) ? payload.source.source_files : []
         },
         summary: {
-          plain: payload.summary?.plain || '',
-          key_points: Array.isArray(payload.summary?.key_points) ? payload.summary.key_points : []
+          plain: (payload.summary && payload.summary.plain) || "",
+          key_points: (payload.summary && Array.isArray(payload.summary.key_points)) ? payload.summary.key_points : []
         },
         quiz: {
-          title: payload.quiz?.title || '',
-          description: payload.quiz?.description || '',
-          questions: Array.isArray(payload.quiz?.questions) ? payload.quiz.questions : []
+          title: (payload.quiz && payload.quiz.title) || "",
+          description: (payload.quiz && payload.quiz.description) || "",
+          questions: (payload.quiz && Array.isArray(payload.quiz.questions)) ? payload.quiz.questions : []
         },
         mind_map: {
-          title: payload.mind_map?.title || payload.source?.title || 'Mind map',
-          layout: payload.mind_map?.layout || 'radial',
-          nodes: Array.isArray(payload.mind_map?.nodes) ? payload.mind_map.nodes : []
+          title: (payload.mind_map && payload.mind_map.title) || ((payload.source && payload.source.title) || "Mind map"),
+          layout: (payload.mind_map && payload.mind_map.layout) || "radial",
+          nodes: (payload.mind_map && Array.isArray(payload.mind_map.nodes)) ? payload.mind_map.nodes : []
         }
       };
     }
 
-    throw new Error('JSON did not match quiz, mind_map, or combined format.');
+    throw new Error("JSON did not match quiz, mind_map, or combined format.");
   }
 
   function savePayloadFromInput() {
     try {
-      const raw = payloadInput.value.trim();
+      var raw = payloadInput.value.trim();
 
       if (!raw) {
-        showStatus('Paste a Copilot response or JSON first.', 'error');
+        showStatus("Paste a Copilot response or JSON first.", "error");
         return;
       }
 
-      let jsonText = cleanPotentialJson(raw);
+      var jsonText = cleanText(raw);
 
       try {
         JSON.parse(jsonText);
-      } catch {
-        const extracted = extractJsonObject(raw);
+      } catch (e) {
+        var extracted = extractJsonObject(raw);
         if (!extracted) {
-          throw new Error('No valid JSON object found in pasted text.');
+          throw new Error("No valid JSON object found in the pasted text.");
         }
-        jsonText = cleanPotentialJson(extracted);
+        jsonText = cleanText(extracted);
       }
 
-      const parsed = JSON.parse(jsonText);
-      const payload = normalisePayload(parsed);
+      var parsed = JSON.parse(jsonText);
+      var payload = normalisePayload(parsed);
 
       localStorage.setItem(KEY, JSON.stringify(payload));
       render(payload);
 
-      const hasQuiz = Array.isArray(payload.quiz?.questions) && payload.quiz.questions.length > 0;
-      const hasMap = Array.isArray(payload.mind_map?.nodes) && payload.mind_map.nodes.length > 0;
+      var hasQuiz = payload.quiz && Array.isArray(payload.quiz.questions) && payload.quiz.questions.length > 0;
+      var hasMap = payload.mind_map && Array.isArray(payload.mind_map.nodes) && payload.mind_map.nodes.length > 0;
 
       if (hasQuiz && hasMap) {
-        showStatus('Saved quiz and mind map payload.', 'success');
+        showStatus("Saved quiz and mind map.", "success");
       } else if (hasQuiz) {
-        showStatus('Saved quiz payload.', 'success');
+        showStatus("Saved quiz.", "success");
       } else if (hasMap) {
-        showStatus('Saved mind map payload.', 'success');
+        showStatus("Saved mind map.", "success");
       } else {
-        showStatus('Saved payload, but no quiz questions or mind map nodes were found.', 'error');
+        showStatus("Saved payload, but no quiz questions or mind map nodes were found.", "error");
       }
-    } catch (error) {
-      console.error(error);
-      showStatus(`Could not parse a valid JSON payload. ${error.message}`, 'error');
+    } catch (err) {
+      console.error(err);
+      showStatus("Could not parse a valid JSON payload. " + err.message, "error");
     }
   }
 
   async function pasteFromClipboard() {
     try {
       if (!navigator.clipboard || !navigator.clipboard.readText) {
-        throw new Error('Clipboard access is not available in this browser.');
+        throw new Error("Clipboard access is not available.");
       }
 
-      const text = await navigator.clipboard.readText();
+      var text = await navigator.clipboard.readText();
 
       if (!text || !text.trim()) {
-        showStatus('Clipboard is empty.', 'error');
+        showStatus("Clipboard is empty.", "error");
         return;
       }
 
       payloadInput.value = text;
       savePayloadFromInput();
-    } catch (error) {
-      console.error(error);
-      showStatus('Could not read from clipboard. You may need to paste manually.', 'error');
+    } catch (err) {
+      console.error(err);
+      showStatus("Could not read from clipboard. You may need to paste manually.", "error");
     }
   }
 
   function enablePasteModeFromUrl() {
-    const params = new URLSearchParams(window.location.search);
+    var params = new URLSearchParams(window.location.search);
 
-    if (params.has('paste')) {
+    if (params.has("paste")) {
       if (pasteHelpPanel) {
-        pasteHelpPanel.style.display = 'block';
+        pasteHelpPanel.style.display = "block";
       }
 
       if (payloadInput) {
         payloadInput.focus();
-        payloadInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        payloadInput.classList.add('paste-highlight');
+        payloadInput.scrollIntoView({ behavior: "smooth", block: "center" });
+        payloadInput.classList.add("paste-highlight");
 
-        setTimeout(() => {
-          payloadInput.classList.remove('paste-highlight');
+        setTimeout(function () {
+          payloadInput.classList.remove("paste-highlight");
         }, 5000);
       }
 
-      showStatus(
-        'Paste the full Copilot response here, or use Paste from Clipboard.',
-        'success'
-      );
+      showStatus("Paste the Copilot response here, or use Paste from Clipboard.", "success");
     }
   }
 
-  saveBtn?.addEventListener('click', savePayloadFromInput);
+  if (saveBtn) saveBtn.addEventListener("click", savePayloadFromInput);
 
-  clearBtn?.addEventListener('click', () => {
-    localStorage.removeItem(KEY);
-    payloadInput.value = '';
-    render({});
-    showStatus('Saved payload cleared.', 'success');
-  });
+  if (clearBtn) {
+    clearBtn.addEventListener("click", function () {
+      localStorage.removeItem(KEY);
+      if (payloadInput) payloadInput.value = "";
+      render({});
+      showStatus("Saved payload cleared.", "success");
+    });
+  }
 
-  pasteClipboardBtn?.addEventListener('click', pasteFromClipboard);
+  if (pasteClipboardBtn) {
+    pasteClipboardBtn.addEventListener("click", pasteFromClipboard);
+  }
 
-  payloadInput?.addEventListener('paste', () => {
-    setTimeout(() => {
-      if (payloadInput.value.trim()) {
-        savePayloadFromInput();
-      }
-    }, 150);
-  });
+  if (payloadInput) {
+    payloadInput.addEventListener("paste", function () {
+      setTimeout(function () {
+        if (payloadInput.value.trim()) {
+          savePayloadFromInput();
+        }
+      }, 150);
+    });
+  }
 
   try {
-    const stored = localStorage.getItem(KEY);
+    var stored = localStorage.getItem(KEY);
     render(stored ? JSON.parse(stored) : {});
-  } catch (error) {
-    console.error(error);
+  } catch (err) {
+    console.error(err);
     render({});
   }
 
