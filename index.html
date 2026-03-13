@@ -1,78 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Copilot Study Tool Exporter</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Copilot Study Tool Exporter</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1>Copilot Study Tool Exporter</h1>
+      <p class="subtitle">Convert Copilot-generated study materials into quizzes and interactive mind maps</p>
+    </div>
+  </header>
 
-<header class="site-header">
-<div class="wrap">
-<h1>Copilot Study Tool Exporter</h1>
-<p class="subtitle">Convert Copilot-generated study materials into quizzes and interactive mind maps</p>
-</div>
-</header>
+  <main class="wrap">
+    <section class="panel">
+      <h2>How this works</h2>
 
-<main class="wrap">
+      <div class="help-box">
+        <h3>Step 1 — Generate study material in Copilot</h3>
+        <p>
+          Use the Copilot study assistant to create either a quiz or a mind map from your article or notes.
+        </p>
 
-<section class="panel">
-<h2>How this works</h2>
+        <h3>Step 2 — Paste the Copilot response</h3>
+        <p>
+          Copy the full Copilot response and paste it into the box below, or use the
+          <strong>Paste from Clipboard</strong> button.
+        </p>
 
-<div class="help-box">
+        <h3>Step 3 — Open the study tool</h3>
+        <p>
+          After saving the payload, open either the Quiz Tool or Mind Map Tool to study, edit, or export the material.
+        </p>
+      </div>
+    </section>
 
-<h3>Step 1 — Generate study material in Copilot</h3>
+    <section class="panel" id="pasteHelpPanel" style="display:none;">
+      <div class="help-box">
+        <h3>Quick paste mode</h3>
+        <p>
+          You opened this page from Copilot. Paste the Copilot response below, or use
+          <strong>Paste from Clipboard</strong>.
+        </p>
+      </div>
+    </section>
 
-<p>
-Use the Copilot study assistant to create either a quiz or a mind map from your article or notes.
-</p>
+    <section class="panel">
+      <h2>Paste Copilot response</h2>
 
-<p>
-When Copilot finishes, it will provide a link to open this tool automatically.
-</p>
+      <label for="payloadInput" class="label">Paste the Copilot output below</label>
 
-<h3>Step 2 — Paste the Copilot response</h3>
+      <textarea
+        id="payloadInput"
+        placeholder="Paste the full Copilot response here. The tool will automatically extract the study JSON."
+      ></textarea>
 
-<p>
-Copy the full Copilot response and paste it into the box below.
-The tool will automatically detect and extract the JSON study data.
-</p>
+      <div class="button-row">
+        <button id="pasteClipboardBtn">Paste from Clipboard</button>
+        <button id="saveBtn" class="primary">Save study material</button>
+        <button id="clearBtn">Clear saved material</button>
+      </div>
 
-<h3>Step 3 — Open the study tool</h3>
+      <div id="statusMessage" class="status"></div>
+    </section>
 
-<p>
-After saving the payload, open either the Quiz Tool or Mind Map Tool to study, edit, or export the material.
-</p>
+    <section class="panel">
+      <h2>Current saved study material</h2>
 
-</div>
-</section>
+      <div class="meta-grid">
+        <div>
+          <div class="meta-label">Title</div>
+          <div id="sourceTitle" class="meta-value">No study material loaded</div>
+        </div>
 
+        <div>
+          <div class="meta-label">Authors</div>
+          <div id="sourceAuthors" class="meta-value">—</div>
+        </div>
 
-<section class="panel" id="pasteHelpPanel" style="display:none;">
+        <div>
+          <div class="meta-label">Year</div>
+          <div id="sourceYear" class="meta-value">—</div>
+        </div>
 
-<div class="help-box">
+        <div>
+          <div class="meta-label">Origin</div>
+          <div id="sourceOrigin" class="meta-value">—</div>
+        </div>
+      </div>
 
-<h3>Quick paste mode</h3>
+      <div class="meta-block">
+        <div class="meta-label">Citation</div>
+        <div id="sourceCitation" class="meta-value">—</div>
+      </div>
 
-<p>
-You opened this page from Copilot. Paste the Copilot response below and the tool will automatically load it.
-</p>
+      <div class="meta-block">
+        <div class="meta-label">Summary</div>
+        <div id="sourceSummary" class="meta-value">—</div>
+      </div>
 
-</div>
+      <p class="small-note">
+        This study material will be used when opening the Quiz Tool or Mind Map Tool.
+      </p>
 
-</section>
+      <div class="button-row">
+        <a href="quiz-tool.html" class="buttonlike primary">Open Quiz Tool</a>
+        <a href="mindmap-tool.html" class="buttonlike">Open Mind Map Tool</a>
+      </div>
+    </section>
+  </main>
 
-
-<section class="panel">
-
-<h2>Paste Copilot response</h2>
-
-<label for="payloadInput" class="label">Paste the Copilot output below</label>
-
-<textarea
-id="payloadInput"
+  <script src="app.js"></script>
+</body>
+</html>id="payloadInput"
 placeholder="Paste the full Copilot response here. The tool will automatically extract the study JSON."
 ></textarea>
 
