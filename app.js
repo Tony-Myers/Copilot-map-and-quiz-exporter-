@@ -78,13 +78,13 @@ function extractJsonObject(text) {
 function cleanPotentialJson(text) {
   let cleaned = text.trim();
 
-  // remove markdown fences if present
+  // remove code fences
   cleaned = cleaned.replace(/^```(?:json)?/i, '').replace(/```$/i, '').trim();
 
   // repair doubled braces
   cleaned = cleaned.replace(/\{\{/g, '{').replace(/\}\}/g, '}');
 
-  // remove smart quotes only if needed around whole text is too risky; leave normal JSON quotes untouched
+  // normalise smart quotes
   cleaned = cleaned.replace(/[“”]/g, '"').replace(/[‘’]/g, "'");
 
   return cleaned;
@@ -95,7 +95,7 @@ function normalisePayload(payload) {
     throw new Error('Payload is not an object.');
   }
 
-  // Quiz-only format
+  // Quiz-only
   if (payload.type === 'quiz' && payload.quiz) {
     return {
       version: '1.0',
@@ -117,14 +117,14 @@ function normalisePayload(payload) {
         questions: Array.isArray(payload.quiz?.questions) ? payload.quiz.questions : []
       },
       mind_map: {
-        title: payload.source?.title || '',
+        title: '',
         layout: 'radial',
         nodes: []
       }
     };
   }
 
-  // Mind-map-only format
+  // Mind-map-only
   if (payload.type === 'mind_map' && payload.mind_map) {
     return {
       version: '1.0',
@@ -153,7 +153,7 @@ function normalisePayload(payload) {
     };
   }
 
-  // Combined format
+  // Combined
   if (payload.source || payload.quiz || payload.mind_map) {
     return {
       version: payload.version || '1.0',
@@ -275,83 +275,6 @@ document.getElementById('payloadInput')?.addEventListener('paste', () => {
     if (!raw) return;
     savePayloadFromInput();
   }, 150);
-});
-
-try {
-  const stored = localStorage.getItem(KEY);
-  render(stored ? JSON.parse(stored) : {});
-} catch (e) {
-  console.error(e);
-  render({});
-}
-
-enablePasteModeFromUrl();  try {
-    const raw = document.getElementById('payloadInput').value.trim();
-
-    if (!raw) {
-      showStatus('Paste a Copilot response or JSON first.', 'error');
-      return;
-    }
-
-    let jsonText = raw;
-
-    try {
-      JSON.parse(jsonText);
-    } catch {
-      const extracted = extractJsonObject(raw);
-      if (!extracted) {
-        throw new Error('No valid JSON object found.');
-      }
-      jsonText = extracted;
-    }
-
-    const payload = JSON.parse(jsonText);
-    localStorage.setItem(KEY, JSON.stringify(payload));
-    render(payload);
-    showStatus('Payload saved in browser storage.', 'success');
-  } catch (e) {
-    console.error(e);
-    showStatus('Could not parse a valid JSON payload.', 'error');
-  }
-}
-
-function enablePasteModeFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-
-  if (params.has('paste')) {
-    const box = document.getElementById('payloadInput');
-
-    if (box) {
-      box.focus();
-      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      box.classList.add('paste-highlight');
-
-      setTimeout(() => {
-        box.classList.remove('paste-highlight');
-      }, 5000);
-    }
-
-    showStatus(
-      'Paste the full Copilot response here. The tool will try to extract the JSON automatically.',
-      'success'
-    );
-  }
-}
-
-document.getElementById('saveBtn').addEventListener('click', savePayloadFromInput);
-
-document.getElementById('clearBtn').addEventListener('click', () => {
-  localStorage.removeItem(KEY);
-  render({});
-  showStatus('Saved payload cleared.', 'success');
-});
-
-document.getElementById('payloadInput').addEventListener('paste', () => {
-  setTimeout(() => {
-    const raw = document.getElementById('payloadInput').value.trim();
-    if (!raw) return;
-    savePayloadFromInput();
-  }, 120);
 });
 
 try {
