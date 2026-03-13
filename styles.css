@@ -28,11 +28,3 @@
 .help-box li{
   margin:.2rem 0;
 }
-select {
-  width: 100%;
-  padding: .75rem;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  font: inherit;
-  background: #fff;
-}

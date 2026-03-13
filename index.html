@@ -10,7 +10,7 @@
   <header class="site-header">
     <div class="wrap">
       <h1>Copilot Study Tool Exporter</h1>
-      <p class="subtitle">Convert Copilot-generated study materials into quizzes, interactive mind maps, and podcast-style audio</p>
+      <p class="subtitle">Convert Copilot-generated study materials into quizzes and interactive mind maps</p>
     </div>
   </header>
 
@@ -21,23 +21,18 @@
       <div class="help-box">
         <h3>Step 1 — Generate study material in Copilot</h3>
         <p>
-          Use the Copilot study assistant to create either a quiz or a mind map from your article, chapter, or notes.
+          Use the Copilot study assistant to create either a quiz or a mind map from your article or notes.
         </p>
 
         <h3>Step 2 — Paste the Copilot response</h3>
         <p>
-          Copy the full Copilot response and paste it into the box below, or use
-          <strong>Paste from Clipboard</strong>.
+          Copy the full Copilot response and paste it into the box below, or use the
+          <strong>Paste from Clipboard</strong> button.
         </p>
 
         <h3>Step 3 — Open the study tool</h3>
         <p>
           After saving the payload, open either the Quiz Tool or Mind Map Tool to study, edit, or export the material.
-        </p>
-
-        <h3>Optional — Podcast-style audio</h3>
-        <p>
-          You can also paste a short Host / Expert dialogue script and play it aloud with two browser voices.
         </p>
       </div>
     </section>
@@ -114,43 +109,6 @@
         <a href="quiz-tool.html" class="buttonlike primary">Open Quiz Tool</a>
         <a href="mindmap-tool.html" class="buttonlike">Open Mind Map Tool</a>
       </div>
-    </section>
-
-    <section class="panel">
-      <h2>Podcast-style audio</h2>
-
-      <label for="podcastScript" class="label">Paste dialogue script</label>
-      <textarea
-        id="podcastScript"
-        placeholder="Paste a short dialogue using lines like:
-Host: ...
-Expert: ..."
-        style="min-height: 220px;"
-      ></textarea>
-
-      <div class="meta-grid">
-        <div>
-          <label for="hostVoiceSelect" class="label">Host voice</label>
-          <select id="hostVoiceSelect"></select>
-        </div>
-        <div>
-          <label for="expertVoiceSelect" class="label">Expert voice</label>
-          <select id="expertVoiceSelect"></select>
-        </div>
-      </div>
-
-      <div class="button-row">
-        <button id="loadSamplePodcastBtn">Load sample</button>
-        <button id="playPodcastBtn" class="primary">Play</button>
-        <button id="pausePodcastBtn">Pause</button>
-        <button id="resumePodcastBtn">Resume</button>
-        <button id="stopPodcastBtn">Stop</button>
-      </div>
-
-      <p class="small-note">
-        Use short lines beginning with <strong>Host:</strong> and <strong>Expert:</strong>.
-        Available voices depend on the browser and device.
-      </p>
     </section>
   </main>
 
